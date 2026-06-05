@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>电商平台手机端MOA</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ===== Container Layout ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* Top Navigation Bar */
+    .app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: #16213e;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+    }
+    .app-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .app-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #1890FF, #42A5FF);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+    }
+    .app-logo-text {
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .app-logo-text span {
+      color: #1890FF;
+    }
+    .app-desc {
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      display: none;
+    }
+    .app-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .app-badge {
+      background: linear-gradient(135deg, #1890FF, #42A5FF);
+      color: #fff;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    /* Tab Navigation */
+    .page-tabs {
+      display: flex;
+      gap: 0;
+      background: #16213e;
+      padding: 0 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .page-tabs::-webkit-scrollbar { display: none; }
+    .page-tab {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .page-tab i { font-size: 14px; }
+    .page-tab.active {
+      color: #1890FF;
+      border-bottom-color: #1890FF;
+      font-weight: 600;
+    }
+    .page-tab:hover { color: rgba(255,255,255,0.7); }
+    .page-tab.active:hover { color: #1890FF; }
+
+    /* Main content area */
+    .pages-container {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      min-height: calc(100vh - 120px);
+    }
+
+    /* Page Frame */
+    .page-frame {
+      display: block;
+      background: #fff;
+      border-radius: 16px;
+      overflow: visible;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .page-frame-label {
+      background: #16213e;
+      color: #fff;
+      font-size: 12px;
+      padding: 8px 16px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 10;
+    }
+    .page-frame-label i { font-size: 13px; color: #1890FF; }
+
+    .page-frame iframe {
+      width: 375px;
+      height: 720px;
+      border: none;
+      display: block;
+      border-radius: 0 0 16px 16px;
+    }
+
+    /* Info Cards */
+    .info-cards {
+      display: flex;
+      gap: 16px;
+      padding: 16px 20px 0;
+      flex-wrap: wrap;
+    }
+    .info-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 12px 16px;
+      flex: 1;
+      min-width: 180px;
+    }
+    .info-card-title {
+      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+    .info-card-value {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .info-card-value span { color: #1890FF; }
+
+    /* Responsive */
+    @media (max-width: 1600px) {
+      .page-frame iframe {
+        width: 340px;
+        height: 640px;
+      }
+    }
+    @media (max-width: 1300px) {
+      .page-frame iframe {
+        width: 320px;
+        height: 600px;
+      }
+      .app-desc { display: block; }
+    }
+    @media (max-width: 1100px) {
+      .page-frame iframe {
+        width: 300px;
+        height: 560px;
+      }
+    }
+    @media (max-width: 900px) {
+      .pages-container { gap: 16px; padding: 16px; }
+      .page-frame iframe {
+        width: 280px;
+        height: 522px;
+      }
+    }
+    @media (max-width: 700px) {
+      .page-frame iframe {
+        width: 260px;
+        height: 484px;
+      }
+    }
+
+    /* Page indicator dots */
+    .frame-nav {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 0;
+    }
+    .frame-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .frame-dot.active {
+      background: #1890FF;
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    /* Quick info footer */
+    .app-footer {
+      text-align: center;
+      padding: 20px;
+      color: rgba(255,255,255,0.25);
+      font-size: 12px;
+    }
+
+    /* Page grid - 2 columns for better layout */
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(375px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .page-frame-wrap {
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="app-bar">
+    <div class="app-logo">
+      <div class="app-logo-icon">
+        <i class="fa fa-utensils"></i>
+      </div>
+      <div>
+        <div class="app-logo-text">电商平台<span>MOA</span></div>
+        <div class="app-desc">中国移动员工食堂 · 精选美食</div>
+      </div>
+    </div>
+    <div class="app-actions">
+      <div class="app-badge">
+        <i class="fa fa-fire" style="margin-right:4px;"></i> 电商平台手机端MOA
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="page-tabs">
+    <div class="page-tab active" onclick="switchAllView('all')">
+      <i class="fa fa-th-large"></i> 全部页面
+    </div>
+    <div class="page-tab" onclick="switchAllView('home')">
+      <i class="fa fa-home"></i> 首页
+    </div>
+    <div class="page-tab" onclick="switchAllView('search')">
+      <i class="fa fa-search"></i> 搜索页
+    </div>
+    <div class="page-tab" onclick="switchAllView('category')">
+      <i class="fa fa-th-large"></i> 分类页
+    </div>
+    <div class="page-tab" onclick="switchAllView('detail')">
+      <i class="fa fa-eye"></i> 详情页
+    </div>
+    <div class="page-tab" onclick="switchAllView('reviewCenter')">
+      <i class="fa fa-comments"></i> 评价中心
+    </div>
+    <div class="page-tab" onclick="switchAllView('reviewWrite')">
+      <i class="fa fa-edit"></i> 写评价
+    </div>
+    <div class="page-tab" onclick="switchAllView('reviewView')">
+      <i class="fa fa-star"></i> 评价查看
+    </div>
+    <div class="page-tab" onclick="switchAllView('favorites')">
+      <i class="fa fa-heart"></i> 我的收藏
+    </div>
+    <div class="page-tab" onclick="switchAllView('history')">
+      <i class="fa fa-history"></i> 浏览历史
+    </div>
+    <div class="page-tab" onclick="switchAllView('frequent')">
+      <i class="fa fa-shopping-bag"></i> 我常买
+    </div>
+    <div class="page-tab" onclick="switchAllView('cart')">
+      <i class="fa fa-shopping-cart"></i> 购物车
+    </div>
+    <div class="page-tab" onclick="switchAllView('confirm')">
+      <i class="fa fa-clipboard-check"></i> 订单确认
+    </div>
+    <div class="page-tab" onclick="switchAllView('profile')">
+      <i class="fa fa-user"></i> 我的
+    </div>
+    <div class="page-tab" onclick="switchAllView('orders')">
+      <i class="fa fa-receipt"></i> 订单管理
+    </div>
+    <div class="page-tab" onclick="switchAllView('notice')">
+      <i class="fa fa-bell"></i> 消息中心
+    </div>
+    <div class="page-tab" onclick="switchAllView('address')">
+      <i class="fa fa-map-marker-alt"></i> 地址管理
+    </div>
+    <div class="page-tab" onclick="switchAllView('error')">
+      <i class="fa fa-wifi"></i> 网络异常
+    </div>
+    <div class="page-tab" onclick="switchAllView('productList')">
+      <i class="fa fa-list"></i> 商品列表
+    </div>
+  </div>
+
+  <!-- Info Cards -->
+  <div class="info-cards">
+    <div class="info-card">
+      <div class="info-card-title">页面数量</div>
+      <div class="info-card-value"><span>21</span> 个页面</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">商品数据</div>
+      <div class="info-card-value"><span>20</span> 条商品</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">品类分类</div>
+      <div class="info-card-value"><span>5</span> 大分类</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">主色调</div>
+      <div class="info-card-value"><span>#1890FF</span></div>
+    </div>
+  </div>
+
+  <!-- Page Grid -->
+  <div class="pages-container">
+    <div class="page-grid" id="pageGrid">
+      <!-- All pages rendered as iframes -->
+    </div>
+  </div>
+
+  <div class="app-footer">
+    电商平台手机端MOA · 基于 HTML + CSS + JavaScript · 适配 375px 移动端
+  </div>
+
+  <script>
+    const PAGES = [
+      { id: 'home', label: '首页', icon: 'fa-home', src: '首页.html', desc: 'Banner轮播、金刚区、商品推荐、底部导航' },
+      { id: 'search', label: '搜索页', icon: 'fa-search', src: '搜索页.html', desc: '热门搜索、历史记录、搜索联想、筛选排序' },
+      { id: 'category', label: '分类页', icon: 'fa-th-large', src: '分类页.html', desc: '一级分类导航、综合销量价格排序、商品网格、加购按钮' },
+      { id: 'detail', label: '商品详情', icon: 'fa-eye', src: '商品详情页.html', desc: '商品信息、SKU选择、用户评价、加购购买' },
+      { id: 'reviewCenter', label: '评价中心', icon: 'fa-comments', src: '评价中心.html', desc: '待评价、已评价订单列表、追评功能、商品推荐' },
+      { id: 'reviewWrite', label: '写评价', icon: 'fa-edit', src: '用户评价页.html', desc: '商品评价、骑手评分、图片上传、提交评价' },
+      { id: 'reviewView', label: '评价查看', icon: 'fa-star', src: '评价查看页.html', desc: '评价筛选、星级分布、图片预览、点赞功能' },
+      { id: 'favorites', label: '我的收藏', icon: 'fa-heart', src: '我的收藏.html', desc: '收藏商品列表、移除收藏、加购、底部统计' },
+      { id: 'history', label: '浏览历史', icon: 'fa-history', src: '浏览历史.html', desc: '浏览记录列表、时间分组、搜索、批量删除' },
+      { id: 'frequent', label: '我常买', icon: 'fa-shopping-bag', src: '我常买.html', desc: '历史买过、大家都在买、时间分组、排序筛选' },
+      { id: 'cart', label: '购物车', icon: 'fa-shopping-cart', src: '购物车.html', desc: '商品列表、数量调整、全选删除、清空无货' },
+      { id: 'confirm', label: '订单确认', icon: 'fa-clipboard-check', src: '订单确认页.html?mode=pickup', desc: '地址选择、自提/配送、订单摘要、价格明细、提交下单' },
+      { id: 'profile', label: '我的', icon: 'fa-user', src: '我的.html', desc: '用户信息、订单导航、功能入口、退出登录' },
+      { id: 'orders', label: '订单管理', icon: 'fa-receipt', src: '订单管理.html', desc: '全部、待支付、待收货、退货/售后Tab切换' },
+      { id: 'notice', label: '消息中心', icon: 'fa-bell', src: '消息中心.html', desc: '全部、订单消息、到货提醒、资产提醒、其他消息分类展示' },
+      { id: 'address', label: '地址管理', icon: 'fa-map-marker-alt', src: '地址管理.html', desc: '地址列表、新增编辑、设为默认、批量删除、搜索筛选' },
+      { id: 'error', label: '网络异常', icon: 'fa-wifi', src: '网络异常.html', desc: '网络异常提示、重新加载按钮、返回上一页' },
+      { id: 'productList', label: '商品列表', icon: 'fa-list', src: '商品列表页.html?keyword=包子', desc: '搜索结果页、多维度排序、价格对比、加购功能' },
+    ];
+
+    const PAGE_GRID = document.getElementById('pageGrid');
+    let currentView = 'all';
+    const navStack = ['all'];
+
+    function renderPages(filter) {
+      PAGE_GRID.innerHTML = '';
+
+      const pages = filter === 'all' ? PAGES : PAGES.filter(p => p.id === filter);
+
+      pages.forEach(page => {
+        const wrap = document.createElement('div');
+        wrap.className = 'page-frame-wrap';
+        wrap.id = `frame-wrap-${page.id}`;
+
+        const frame = document.createElement('div');
+        frame.className = 'page-frame';
+
+        const label = document.createElement('div');
+        label.className = 'page-frame-label';
+        label.innerHTML = `<i class="fa ${page.icon}"></i> ${page.label}`;
+
+        const iframe = document.createElement('iframe');
+        iframe.id = `iframe-${page.id}`;
+        iframe.src = page.src;
+        iframe.title = page.label;
+        iframe.setAttribute('loading', 'lazy');
+
+        // Add navigation listener
+        iframe.onload = () => {
+          try {
+            iframe.contentWindow.addEventListener('message', (e) => {
+              if (e.data && e.data.type === 'switchPage') {
+                // category page can pass cat parameter to select a category on load
+                if (e.data.page === 'category' && e.data.cat) {
+                  window._pendingCat = e.data.cat;
+                }
+                switchAllView(e.data.page);
+                // If target page is orders, pass the tab
+                if (e.data.page === 'orders' && e.data.tab) {
+                  window._pendingOrderTab = e.data.tab;
+                  const ordersFrame = document.getElementById('iframe-orders');
+                  if (ordersFrame && ordersFrame.contentWindow) {
+                    ordersFrame.contentWindow.postMessage({ type: 'setTab', tab: e.data.tab }, '*');
+                  }
+                }
+                // If target page is reviewView, pass the product id
+                if (e.data.page === 'reviewView' && e.data.id) {
+                  window._pendingReviewProductId = e.data.id;
+                  const reviewsFrame = document.getElementById('iframe-reviewView');
+                  if (reviewsFrame && reviewsFrame.contentWindow) {
+                    reviewsFrame.contentWindow.postMessage({ type: 'setProduct', id: e.data.id }, '*');
+                  }
+                }
+                // If target page is reviewWrite, pass the order id
+                if (e.data.page === 'reviewWrite' && e.data.orderId) {
+                  window._pendingReviewWriteOrderId = e.data.orderId;
+                  const reviewWriteFrame = document.getElementById('iframe-reviewWrite');
+                  if (reviewWriteFrame && reviewWriteFrame.contentWindow) {
+                    reviewWriteFrame.contentWindow.postMessage({ type: 'setOrder', orderId: e.data.orderId }, '*');
+                  }
+                }
+                // If target page is reviewCenter, refresh the page
+                if (e.data.page === 'reviewCenter') {
+                  const reviewCenterFrame = document.getElementById('iframe-reviewCenter');
+                  if (reviewCenterFrame && reviewCenterFrame.contentWindow) {
+                    reviewCenterFrame.contentWindow.postMessage({ type: 'refresh' }, '*');
+                  }
+                }
+                // If target page is productList, pass the keyword
+                if (e.data.page === 'productList' && e.data.keyword) {
+                  window._pendingKeyword = e.data.keyword;
+                  const listFrame = document.getElementById('iframe-productList');
+                  if (listFrame && listFrame.contentWindow) {
+                    listFrame.contentWindow.postMessage({ type: 'setKeyword', keyword: e.data.keyword }, '*');
+                  }
+                }
+              }
+              if (e.data && e.data.type === 'navigate') {
+                navigateToDetail(e.data.id);
+              }
+              // Forward cart updates between all iframes for badge sync
+              if (e.data && e.data.type === 'cartUpdated') {
+                updateAllCartBadges();
+              }
+              // Handle navigateBack from child pages
+              if (e.data && e.data.type === 'navigateBack') {
+                history.back();
+              }
+            });
+            // Handle pending cat for category page
+            if (iframe.id === 'iframe-category' && window._pendingCat) {
+              iframe.contentWindow.postMessage({ type: 'setCat', cat: window._pendingCat }, '*');
+              window._pendingCat = null;
+            }
+            // Handle pending tab for orders page
+            if (iframe.id === 'iframe-orders' && window._pendingOrderTab) {
+              iframe.contentWindow.postMessage({ type: 'setTab', tab: window._pendingOrderTab }, '*');
+              window._pendingOrderTab = null;
+            }
+            // Handle pending product id for reviewView page
+            if (iframe.id === 'iframe-reviewView' && window._pendingReviewProductId) {
+              iframe.contentWindow.postMessage({ type: 'setProduct', id: window._pendingReviewProductId }, '*');
+              window._pendingReviewProductId = null;
+            }
+            // Handle pending order id for reviewWrite page
+            if (iframe.id === 'iframe-reviewWrite' && window._pendingReviewWriteOrderId) {
+              iframe.contentWindow.postMessage({ type: 'setOrder', orderId: window._pendingReviewWriteOrderId }, '*');
+              window._pendingReviewWriteOrderId = null;
+            }
+            // Handle pending keyword for productList page
+            if (iframe.id === 'iframe-productList' && window._pendingKeyword) {
+              iframe.contentWindow.postMessage({ type: 'setKeyword', keyword: window._pendingKeyword }, '*');
+              window._pendingKeyword = null;
+            }
+          } catch (err) {
+            // Cross-origin restriction
+          }
+        };
+
+        frame.appendChild(label);
+        frame.appendChild(iframe);
+        wrap.appendChild(frame);
+        PAGE_GRID.appendChild(wrap);
+      });
+    }
+
+    function switchAllView(view) {
+      currentView = view;
+
+      // Update tabs
+      document.querySelectorAll('.page-tab').forEach(tab => {
+        const label = tab.textContent;
+        const isActive = (
+          view === 'all' ? label.includes('全部') :
+          view === 'home' ? label.includes('首页') :
+          view === 'search' ? label.includes('搜索') :
+          view === 'category' ? label.includes('分类') :
+          view === 'detail' ? label.includes('详情') :
+          view === 'reviewCenter' ? label.includes('评价中心') :
+          view === 'reviewWrite' ? label.includes('写评价') :
+          view === 'reviewView' ? label.includes('评价查看') :
+          view === 'favorites' ? label.includes('收藏') :
+          view === 'history' ? label.includes('浏览历史') :
+          view === 'frequent' ? label.includes('我常买') :
+          view === 'cart' ? label.includes('购物车') :
+          view === 'confirm' ? label.includes('订单确认') :
+          view === 'profile' ? label.includes('我的') :
+          view === 'orders' ? label.includes('订单') :
+          view === 'notice' ? label.includes('消息') :
+          view === 'error' ? label.includes('网络异常') :
+          view === 'productList' ? label.includes('商品列表') : false
+        );
+        tab.classList.toggle('active', isActive);
+      });
+
+      renderPages(view);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function highlightFrame(pageId) {
+      // Highlight the frame when navigation happens
+      const wrap = document.getElementById(`frame-wrap-${pageId}`);
+      if (wrap) {
+        wrap.style.transform = 'scale(1.02)';
+        wrap.style.boxShadow = '0 0 20px rgba(24,144,255,0.5)';
+        wrap.style.transition = 'all 0.3s';
+        setTimeout(() => {
+          wrap.style.transform = '';
+          wrap.style.boxShadow = '';
+        }, 1000);
+      }
+    }
+
+    function navigateToDetail(productId) {
+      const detailIframe = document.getElementById('iframe-detail');
+      if (detailIframe) {
+        detailIframe.src = `商品详情页.html?id=${productId}`;
+        highlightFrame('detail');
+      }
+    }
+
+    // Listen for messages from iframes
+    window.addEventListener('message', (e) => {
+      if (!e.data || !e.data.type) return;
+
+      if (e.data.type === 'switchPage') {
+        highlightFrame(e.data.page);
+        // Update tab to show which page is active
+        const tabMap = {
+          'home': '首页',
+          'search': '搜索',
+          'category': '分类',
+          'detail': '详情',
+          'reviewCenter': '评价中心',
+          'reviewWrite': '写评价',
+          'reviewView': '评价查看',
+          'cart': '购物车',
+          'confirm': '订单确认',
+          'notice': '消息'
+        };
+        if (tabMap[e.data.page]) {
+          switchAllView(e.data.page);
+        }
+      }
+
+      if (e.data.type === 'cartUpdated') {
+        updateAllCartBadges();
+      }
+    });
+
+    // Broadcast cartUpdated to all iframes so badges stay in sync
+    function updateAllCartBadges() {
+      try {
+        document.querySelectorAll('iframe').forEach(iframe => {
+          if (iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ type: 'cartUpdated' }, '*');
+          }
+        });
+      } catch (e) {
+        // cross-origin
+      }
+    }
+
+    // Initial render
+    renderPages('all');
+  </script>
+</body>
+</html>

@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>我的 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ===== 主色调 #1890FF ===== */
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f7ff;
+      --primary-dark: #096dd9;
+    }
+
+    .profile-page {
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding-bottom: 70px;
+    }
+
+    /* ===== 1. 用户信息头部 ===== */
+    .profile-header {
+      background: linear-gradient(135deg, #1890FF, #42A5FF);
+      padding: 32px 20px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-header::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .profile-header::after {
+      content: '';
+      position: absolute;
+      bottom: -40px;
+      left: -10px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .profile-user {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .profile-avatar:active { transform: scale(0.95); }
+    .profile-avatar i { font-size: 28px; color: #fff; }
+
+    .profile-info { flex: 1; }
+    .profile-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .profile-vip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #FFD700;
+    }
+    .profile-vip i { font-size: 10px; }
+    .profile-phone {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 4px;
+    }
+    .profile-balance {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.9);
+      margin-top: 2px;
+    }
+    .profile-balance i { font-size: 11px; color: #FFD700; }
+    .profile-balance strong { color: #FFD700; font-weight: 700; }
+    .profile-edit {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+      font-size: 18px;
+      transition: color 0.2s;
+      background: none;
+      border: none;
+    }
+    .profile-edit:active { color: #fff; }
+
+    /* ===== 2. 订单状态快捷导航 ===== */
+    .order-section {
+      background: #fff;
+      margin: 12px 14px;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .order-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .order-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .order-more {
+      font-size: 12px;
+      color: #999;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+    }
+    .order-more:active { color: var(--primary); }
+
+    .order-nav {
+      display: flex;
+      padding: 14px 0 16px;
+    }
+    .order-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      position: relative;
+    }
+    .order-item:active { opacity: 0.7; }
+    .order-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--primary);
+      position: relative;
+    }
+    .order-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 16px;
+      height: 16px;
+      background: #f5222d;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      border: 1.5px solid #fff;
+    }
+    .order-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* ===== 3. 核心功能入口 ===== */
+    .function-section {
+      background: #fff;
+      margin: 0 14px 12px;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .function-grid {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 8px 0;
+    }
+    .func-item {
+      width: 25%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 0;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .func-item:active { transform: scale(0.93); }
+    .func-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .func-icon.blue { background: var(--primary-light); color: var(--primary); }
+    .func-icon.orange { background: #FFF3E0; color: #FF9800; }
+    .func-icon.green { background: #E8F5E9; color: #4CAF50; }
+    .func-icon.purple { background: #F3E5F5; color: #9C27B0; }
+    .func-icon.red { background: #FFEBEE; color: #F44336; }
+    .func-icon.teal { background: #E0F2F1; color: #009688; }
+    .func-icon.gold { background: #FFF8E1; color: #FFB300; }
+    .func-icon.gray { background: #F5F5F5; color: #888; }
+    .func-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* ===== 4. 设置入口 ===== */
+    .settings-section {
+      background: #fff;
+      margin: 0 14px;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .settings-item {
+      display: flex;
+      align-items: center;
+      padding: 15px 16px;
+      border-bottom: 1px solid #f5f5f5;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item:active { background: #f9f9f9; }
+    .settings-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      font-size: 15px;
+    }
+    .settings-icon.blue { background: var(--primary-light); color: var(--primary); }
+    .settings-icon.gray { background: #f5f5f5; color: #888; }
+    .settings-icon.red { background: #FFEBEE; color: #F44336; }
+    .settings-title {
+      flex: 1;
+      font-size: 14px;
+      color: #1a1a1a;
+    }
+    .settings-arrow {
+      color: #ccc;
+      font-size: 13px;
+    }
+    .settings-divider {
+      height: 1px;
+      background: #f5f5f5;
+      margin: 0 16px;
+    }
+
+    /* ===== 退出登录 ===== */
+    .logout-section {
+      padding: 20px 14px;
+    }
+    .logout-btn {
+      width: 100%;
+      padding: 14px;
+      background: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #f5222d;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .logout-btn:active {
+      background: #FFEBEE;
+      transform: scale(0.98);
+    }
+
+    /* ===== 弹窗 ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      width: 300px;
+      overflow: hidden;
+      animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn {
+      from { transform: scale(0.88); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-content {
+      padding: 28px 24px 20px;
+      text-align: center;
+    }
+    .modal-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 26px;
+    }
+    .modal-icon.red { background: rgba(245,34,45,0.1); color: #f5222d; }
+    .modal-icon.blue { background: rgba(24,144,255,0.1); color: #1890FF; }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+    .modal-msg {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .modal-btns {
+      display: flex;
+      border-top: 1px solid #f0f0f0;
+    }
+    .modal-btn {
+      flex: 1;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background: #fff;
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+    .modal-btn:active { background: #f5f5f5; }
+    .modal-btn-cancel { color: #666; border-right: 1px solid #f0f0f0; }
+    .modal-btn-confirm { color: #f5222d; }
+    .modal-btn-primary { color: var(--primary); }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 24px;
+      border-radius: 22px;
+      z-index: 500;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-page" id="profilePage">
+    <!-- 1. 用户信息头部 -->
+    <div class="profile-header">
+      <div class="profile-user">
+        <div class="profile-avatar">
+          <i class="fa fa-user"></i>
+        </div>
+        <div class="profile-info">
+          <div class="profile-name">张小明 <span style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.7);">省公司</span></div>
+          <div class="profile-phone">138****8888</div>
+          <div class="profile-balance">
+            <i class="fa fa-wallet"></i>
+            卡余额：<strong>¥128.50</strong>
+          </div>
+        </div>
+        <button class="profile-edit" onclick="goEditProfile()">
+          <i class="fa fa-cog"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. 订单状态快捷导航 -->
+    <div class="order-section">
+      <div class="order-header">
+        <span class="order-title">我的资产</span>
+        <button class="order-more" onclick="goOrderList('all')">
+          全部订单 <i class="fa fa-chevron-right"></i>
+        </button>
+      </div>
+      <div class="order-nav">
+        <div class="order-item" onclick="goOrderList('unpaid')">
+          <div class="order-icon">
+            <i class="fa fa-receipt"></i>
+            <span class="order-badge" id="badge-unpaid">2</span>
+          </div>
+          <span class="order-label">待支付</span>
+        </div>
+        <div class="order-item" onclick="goOrderList('shipped')">
+          <div class="order-icon">
+            <i class="fa fa-truck"></i>
+            <span class="order-badge" id="badge-shipped">1</span>
+          </div>
+          <span class="order-label">待收货</span>
+        </div>
+        <div class="order-item" onclick="goToReviewCenter()">
+          <div class="order-icon">
+            <i class="fa fa-clipboard-check"></i>
+            <span class="order-badge" id="badge-review">2</span>
+          </div>
+          <span class="order-label">待评价</span>
+        </div>
+        <div class="order-item" onclick="goOrderList('refund')">
+          <div class="order-icon">
+            <i class="fa fa-undo-alt"></i>
+          </div>
+          <span class="order-label">退款/售后</span>
+        </div>
+        <div class="order-item" onclick="goOrderList('all')" style="border-left: 1px solid #f0f0f0;">
+          <div class="order-icon">
+            <i class="fa fa-bars"></i>
+          </div>
+          <span class="order-label">全部</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 核心功能入口 -->
+    <div class="function-section">
+      <div class="function-grid">
+        <div class="func-item" onclick="goFunc('favorites')">
+          <div class="func-icon orange">
+            <i class="fa fa-heart"></i>
+          </div>
+          <span class="func-label">我的收藏</span>
+        </div>
+        <div class="func-item" onclick="goFunc('history')">
+          <div class="func-icon blue">
+            <i class="fa fa-history"></i>
+          </div>
+          <span class="func-label">浏览历史</span>
+        </div>
+        <div class="func-item" onclick="goFunc('address')">
+          <div class="func-icon teal">
+            <i class="fa fa-map-marker-alt"></i>
+          </div>
+          <span class="func-label">地址管理</span>
+        </div>
+        <div class="func-item" onclick="goFunc('remind')">
+          <div class="func-icon purple">
+            <i class="fa fa-bell"></i>
+          </div>
+          <span class="func-label">到货提醒</span>
+        </div>
+        <div class="func-item" onclick="goFunc('frequent')">
+          <div class="func-icon green">
+            <i class="fa fa-star"></i>
+          </div>
+          <span class="func-label">我常买</span>
+        </div>
+        <div class="func-item" onclick="goFunc('myorder')">
+          <div class="func-icon gold">
+            <i class="fa fa-file-alt"></i>
+          </div>
+          <span class="func-label">我的资产</span>
+        </div>
+        <div class="func-item" onclick="goFunc('feedback')">
+          <div class="func-icon gold">
+            <i class="fa fa-comment-dots"></i>
+          </div>
+          <span class="func-label">意见反馈</span>
+        </div>
+        <div class="func-item" onclick="goFunc('help')">
+          <div class="func-icon gray">
+            <i class="fa fa-question-circle"></i>
+          </div>
+          <span class="func-label">帮助中心</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 设置入口 -->
+    <div class="settings-section">
+      <div class="settings-item" onclick="goSettings('account')">
+        <div class="settings-icon blue">
+          <i class="fa fa-shield-alt"></i>
+        </div>
+        <span class="settings-title">账号与安全</span>
+        <i class="fa fa-chevron-right settings-arrow"></i>
+      </div>
+      <div class="settings-item" onclick="goSettings('notification')">
+        <div class="settings-icon gold">
+          <i class="fa fa-bell"></i>
+        </div>
+        <span class="settings-title">消息中心</span>
+        <i class="fa fa-chevron-right settings-arrow"></i>
+      </div>
+      <div class="settings-item" onclick="goSettings('privacy')">
+        <div class="settings-icon gray">
+          <i class="fa fa-lock"></i>
+        </div>
+        <span class="settings-title">隐私设置</span>
+        <i class="fa fa-chevron-right settings-arrow"></i>
+      </div>
+      <div class="settings-item" onclick="goSettings('about')">
+        <div class="settings-icon gray">
+          <i class="fa fa-info-circle"></i>
+        </div>
+        <span class="settings-title">关于我们</span>
+        <i class="fa fa-chevron-right settings-arrow"></i>
+      </div>
+    </div>
+
+    <!-- 退出登录 -->
+    <div class="logout-section">
+      <button class="logout-btn" onclick="openLogoutModal()">
+        退出登录 / 切换账号
+      </button>
+    </div>
+  </div>
+
+  <!-- 退出登录确认弹窗 -->
+  <div class="modal-overlay" id="logoutModal">
+    <div class="modal-box">
+      <div class="modal-content">
+        <div class="modal-icon red">
+          <i class="fa fa-sign-out-alt"></i>
+        </div>
+        <div class="modal-title">确认退出登录</div>
+        <div class="modal-msg">退出后需要重新登录才能继续使用</div>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()">取消</button>
+        <button class="modal-btn modal-btn-confirm" onclick="doLogout()">确认退出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 切换账号弹窗 -->
+  <div class="modal-overlay" id="switchModal">
+    <div class="modal-box">
+      <div class="modal-content">
+        <div class="modal-icon blue">
+          <i class="fa fa-exchange-alt"></i>
+        </div>
+        <div class="modal-title">切换账号</div>
+        <div class="modal-msg">切换后将退出当前账号，是否继续？</div>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-btn modal-btn-cancel" onclick="closeSwitchModal()">取消</button>
+        <button class="modal-btn modal-btn-primary" onclick="doSwitchAccount()">确认切换</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" style="display:none;"></div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== Profile Page ===== */
+
+    // ---------- Navigation ----------
+
+    function goEditProfile() {
+      toast('正在跳转个人资料...');
+    }
+
+    function goOrderList(status) {
+      const map = {
+        all: '全部订单',
+        unpaid: '待支付',
+        shipped: '待收货',
+        completed: '已完成',
+        refund: '退货/售后'
+      };
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'orders', tab: status }, '*');
+      } else {
+        toast(`正在跳转${map[status] || status}列表...`);
+      }
+    }
+
+    function goFunc(func) {
+      const pageMap = {
+        favorites: 'favorites',
+        history: 'history',
+        frequent: 'frequent',
+        address: 'address'
+      };
+
+      if (pageMap[func] && window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: pageMap[func] }, '*');
+        return;
+      }
+
+      const map = {
+        favorites: '我的收藏',
+        history: '浏览历史',
+        frequent: '我常买',
+        address: '地址管理',
+        remind: '到货提醒',
+        feedback: '意见反馈',
+        service: '在线客服',
+        help: '帮助中心'
+      };
+      toast(`正在跳转${map[func] || func}...`);
+    }
+
+    function goToReviewCenter() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'reviewCenter' }, '*');
+      } else {
+        location.href = '评价中心.html';
+      }
+    }
+
+    function goToAddress() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'address' }, '*');
+      } else {
+        window.location.href = '地址管理.html';
+      }
+    }
+
+    function goSettings(type) {
+      if (type === 'notification') {
+        goToNotice();
+        return;
+      }
+      const map = {
+        account: '账号与安全',
+        payment: '支付管理',
+        notification: '消息中心',
+        privacy: '隐私设置',
+        about: '关于我们'
+      };
+      toast(`正在跳转${map[type] || type}...`);
+    }
+
+    function goToNotice() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'notice' }, '*');
+      } else {
+        window.location.href = '消息中心.html';
+      }
+    }
+
+    // ---------- Logout / Switch Account ----------
+
+    function openLogoutModal() {
+      document.getElementById('logoutModal').classList.add('show');
+    }
+
+    function closeLogoutModal() {
+      document.getElementById('logoutModal').classList.remove('show');
+    }
+
+    function doLogout() {
+      closeLogoutModal();
+      toast('正在退出登录...');
+      // 模拟退出
+      setTimeout(() => {
+        showSwitchModal();
+      }, 1000);
+    }
+
+    function showSwitchModal() {
+      document.getElementById('switchModal').classList.add('show');
+    }
+
+    function closeSwitchModal() {
+      document.getElementById('switchModal').classList.remove('show');
+    }
+
+    function doSwitchAccount() {
+      closeSwitchModal();
+      toast('正在跳转登录页...');
+    }
+
+    // ---------- Toast ----------
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.style.position = 'fixed';
+      el.style.top = '50%';
+      el.style.left = '50%';
+      el.style.transform = 'translate(-50%,-50%)';
+      el.style.background = 'rgba(0,0,0,0.72)';
+      el.style.color = '#fff';
+      el.style.fontSize = '13px';
+      el.style.padding = '10px 24px';
+      el.style.borderRadius = '22px';
+      el.style.zIndex = '500';
+      el.style.pointerEvents = 'none';
+      el.style.whiteSpace = 'nowrap';
+      setTimeout(() => { el.style.display = 'none'; }, 2000);
+    }
+
+    // ---------- Init ----------
+
+    // 更新订单角标（演示数据）
+    function updateOrderBadges() {
+      const badges = { unpaid: 2, shipped: 1, completed: 0, refund: 0 };
+      Object.entries(badges).forEach(([key, val]) => {
+        const el = document.getElementById('badge-' + key);
+        if (el) {
+          el.textContent = val;
+          el.style.display = val > 0 ? 'flex' : 'none';
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', updateOrderBadges);
+  </script>
+</body>
+</html>

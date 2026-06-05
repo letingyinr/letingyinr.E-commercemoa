@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>浏览历史 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f4ff;
+      --success: #52c41a;
+      --warning: #faad14;
+      --error: #f5222d;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --text-tertiary: #999999;
+      --border-color: #f0f0f0;
+      --bg-color: #f5f5f5;
+    }
+
+    body { margin: 0; background: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    /* ===== 顶部导航 ===== */
+    .his-header {
+      background: #fff;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .his-back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .his-back:active { opacity: 0.6; }
+    .his-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .his-search {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .his-search:active { color: var(--primary); }
+    .his-manage {
+      font-size: 14px;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    /* ===== 搜索框 ===== */
+    .his-search-bar {
+      display: none;
+      padding: 10px 12px;
+      background: #fff;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .his-search-bar.show { display: block; }
+    .his-search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 14px;
+      background: var(--bg-color);
+      outline: none;
+    }
+    .his-search-input:focus { border-color: var(--primary); }
+
+    /* ===== 历史列表 ===== */
+    .his-content {
+      padding: 12px;
+    }
+    .his-group {
+      margin-bottom: 16px;
+    }
+    .his-group-title {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+    .his-group-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ===== 商品项 ===== */
+    .his-item {
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .his-item:active { opacity: 0.8; background: #f9f9f9; }
+    .his-item.unavailable { opacity: 0.7; }
+    .his-checkbox {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      margin-top: 25px;
+      cursor: pointer;
+    }
+    .his-item.selected .his-checkbox {
+      display: flex;
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .his-item-img {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f5f5f5;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .his-item-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .his-unavailable-tag {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 2px 6px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 10px;
+      border-radius: 3px;
+    }
+    .his-item-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .his-item-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .his-item-supplier {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .his-item-price {
+      font-size: 15px;
+      color: var(--error);
+      font-weight: 700;
+    }
+    .his-item-add {
+      width: 30px;
+      height: 30px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      align-self: center;
+      transition: all 0.2s;
+    }
+    .his-item-add:active { transform: scale(0.9); }
+    .his-item-add.disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* ===== 空状态 ===== */
+    .his-empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-tertiary);
+    }
+    .his-empty i {
+      font-size: 60px;
+      color: #d9d9d9;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .his-empty p {
+      font-size: 14px;
+      margin: 0;
+    }
+
+    /* ===== 底部操作栏 ===== */
+    .his-footer {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid var(--border-color);
+      z-index: 100;
+    }
+    .his-footer.show { display: flex; }
+    .his-footer-left {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    .his-select-all {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .his-select-all-box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .his-select-all.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .his-footer-right {
+      display: flex;
+      gap: 10px;
+    }
+    .his-delete-btn {
+      padding: 10px 20px;
+      background: #fff;
+      color: var(--error);
+      font-size: 14px;
+      border: 1px solid var(--error);
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    .his-delete-btn:active { background: #fff1f0; }
+    .his-bottom-fill {
+      height: 70px;
+    }
+
+    /* ===== Toast ===== */
+    .his-toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 22px;
+      border-radius: 22px;
+      z-index: 700;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="his-page">
+    <!-- 顶部导航 -->
+    <div class="his-header">
+      <div class="his-back" onclick="goBack()">
+        <i class="fa fa-chevron-left"></i>
+      </div>
+      <div class="his-title">浏览历史</div>
+      <div class="his-search" onclick="toggleSearch()">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="his-manage" id="hisManage" onclick="toggleManage()">管理</div>
+    </div>
+
+    <!-- 搜索框 -->
+    <div class="his-search-bar" id="hisSearchBar">
+      <input type="text" class="his-search-input" id="hisSearchInput" placeholder="搜索浏览历史" oninput="searchHistory(this.value)">
+    </div>
+
+    <!-- 历史列表 -->
+    <div class="his-content" id="hisContent"></div>
+
+    <!-- 空状态 -->
+    <div class="his-empty" id="hisEmpty" style="display:none;">
+      <i class="fa fa-history"></i>
+      <p>暂无浏览记录</p>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="his-footer" id="hisFooter">
+      <div class="his-footer-left">
+        <div class="his-select-all" onclick="toggleSelectAll()">
+          <div class="his-select-all-box" id="selectAllBox"></div>
+          <span>全选</span>
+        </div>
+      </div>
+      <div class="his-footer-right">
+        <div class="his-delete-btn" onclick="deleteSelected()">删除</div>
+      </div>
+    </div>
+
+    <div class="his-bottom-fill"></div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== 浏览历史 ===== */
+
+    let historyItems = [];
+    let selectedItems = new Set();
+    let isManageMode = false;
+    let isSearchVisible = false;
+
+    // 模拟浏览历史数据
+    const mockHistory = [
+      {
+        id: 101,
+        name: '红烧狮子头套餐',
+        price: 28.8,
+        supplier: '川菜馆',
+        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+        time: '今天 14:30',
+        unavailable: false
+      },
+      {
+        id: 102,
+        name: '香菇鸡肉盖饭',
+        price: 18.0,
+        supplier: '粤式餐厅',
+        img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop',
+        time: '今天 12:15',
+        unavailable: false
+      },
+      {
+        id: 103,
+        name: '酸菜鱼套餐',
+        price: 32.0,
+        supplier: '川菜馆',
+        img: 'https://images.unsplash.com/photo-1587131782738-de30ea91a542?w=200&h=200&fit=crop',
+        time: '昨天 18:45',
+        unavailable: false
+      },
+      {
+        id: 104,
+        name: '宫保鸡丁盖饭',
+        price: 20.0,
+        supplier: '家常菜馆',
+        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop',
+        time: '昨天 12:00',
+        unavailable: false
+      },
+      {
+        id: 105,
+        name: '已下架商品',
+        price: 15.0,
+        supplier: '测试店铺',
+        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+        time: '昨天 10:30',
+        unavailable: true
+      },
+      {
+        id: 106,
+        name: '卤牛肉拼盘',
+        price: 38.0,
+        supplier: '卤味坊',
+        img: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=200&h=200&fit=crop',
+        time: '05-23 11:20',
+        unavailable: false
+      },
+      {
+        id: 107,
+        name: '番茄炒蛋套餐',
+        price: 16.0,
+        supplier: '家常菜馆',
+        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop',
+        time: '05-22 19:30',
+        unavailable: false
+      }
+    ];
+
+    // ---------- 初始化 ----------
+    function init() {
+      historyItems = [...mockHistory];
+      renderHistory();
+    }
+
+    // ---------- 按时间分组 ----------
+    function groupByTime(items) {
+      const groups = {};
+      const now = new Date();
+      const today = now.toDateString();
+      const yesterday = new Date(now - 86400000).toDateString();
+
+      items.forEach(item => {
+        let groupKey = item.time;
+        // 可以根据需要进一步分组
+        if (!groups[groupKey]) {
+          groups[groupKey] = [];
+        }
+        groups[groupKey].push(item);
+      });
+
+      return groups;
+    }
+
+    // ---------- 渲染历史列表 ----------
+    function renderHistory(filterKeyword = '') {
+      const container = document.getElementById('hisContent');
+      const emptyEl = document.getElementById('hisEmpty');
+      const footerEl = document.getElementById('hisFooter');
+
+      let filteredItems = historyItems;
+      if (filterKeyword) {
+        filteredItems = historyItems.filter(item =>
+          item.name.includes(filterKeyword) || item.supplier.includes(filterKeyword)
+        );
+      }
+
+      if (filteredItems.length === 0) {
+        container.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+
+      // 按时间分组
+      const groups = {};
+      filteredItems.forEach(item => {
+        if (!groups[item.time]) {
+          groups[item.time] = [];
+        }
+        groups[item.time].push(item);
+      });
+
+      let html = '';
+      Object.keys(groups).forEach(time => {
+        html += `
+          <div class="his-group">
+            <div class="his-group-title">${time}</div>
+            <div class="his-group-list">
+              ${groups[time].map(item => `
+                <div class="his-item ${item.unavailable ? 'unavailable' : ''} ${selectedItems.has(item.id) ? 'selected' : ''}" data-id="${item.id}" onclick="onItemClick(${item.id}, ${item.unavailable})">
+                  <div class="his-checkbox">
+                    <i class="fa fa-check" style="font-size:10px;"></i>
+                  </div>
+                  <div class="his-item-img">
+                    <img src="${item.img}" alt="${item.name}" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:10px;\\'>图片</div>'">
+                    ${item.unavailable ? '<span class="his-unavailable-tag">已下架</span>' : ''}
+                  </div>
+                  <div class="his-item-info">
+                    <div class="his-item-name">${item.name}</div>
+                    <div class="his-item-supplier">${item.supplier}</div>
+                    <div class="his-item-price">¥${item.price.toFixed(1)}</div>
+                  </div>
+                  <div class="his-item-add ${item.unavailable ? 'disabled' : ''}" onclick="event.stopPropagation(); addToCart(${item.id})">
+                    <i class="fa fa-plus"></i>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // ---------- 点击商品卡片 ----------
+    function onItemClick(id, unavailable) {
+      if (!isManageMode || unavailable) return;
+
+      if (selectedItems.has(id)) {
+        selectedItems.delete(id);
+      } else {
+        selectedItems.add(id);
+      }
+
+      renderHistory(document.getElementById('hisSearchInput')?.value || '');
+    }
+
+    // ---------- 切换管理模式 ----------
+    function toggleManage() {
+      isManageMode = !isManageMode;
+      document.getElementById('hisManage').textContent = isManageMode ? '完成' : '管理';
+      document.getElementById('hisFooter').classList.toggle('show', isManageMode);
+
+      // 取消全选
+      selectedItems.clear();
+      document.getElementById('selectAllBox').classList.remove('active');
+
+      renderHistory(document.getElementById('hisSearchInput')?.value || '');
+    }
+
+    // ---------- 切换搜索框 ----------
+    function toggleSearch() {
+      isSearchVisible = !isSearchVisible;
+      document.getElementById('hisSearchBar').classList.toggle('show', isSearchVisible);
+      if (isSearchVisible) {
+        document.getElementById('hisSearchInput').focus();
+      } else {
+        document.getElementById('hisSearchInput').value = '';
+        renderHistory('');
+      }
+    }
+
+    // ---------- 搜索 ----------
+    function searchHistory(keyword) {
+      renderHistory(keyword);
+    }
+
+    // ---------- 全选 ----------
+    function toggleSelectAll() {
+      const selectAllBox = document.getElementById('selectAllBox');
+      const availableItems = historyItems.filter(item => !item.unavailable);
+
+      if (selectedItems.size === availableItems.length) {
+        selectedItems.clear();
+        selectAllBox.classList.remove('active');
+      } else {
+        availableItems.forEach(item => selectedItems.add(item.id));
+        selectAllBox.classList.add('active');
+      }
+
+      renderHistory(document.getElementById('hisSearchInput')?.value || '');
+    }
+
+    // ---------- 删除选中 ----------
+    function deleteSelected() {
+      if (selectedItems.size === 0) {
+        showToast('请先选择要删除的记录');
+        return;
+      }
+
+      historyItems = historyItems.filter(item => !selectedItems.has(item.id));
+      selectedItems.clear();
+      document.getElementById('selectAllBox').classList.remove('active');
+
+      renderHistory(document.getElementById('hisSearchInput')?.value || '');
+      showToast('已删除');
+
+      // 退出管理模式
+      isManageMode = false;
+      document.getElementById('hisManage').textContent = '管理';
+      document.getElementById('hisFooter').classList.remove('show');
+    }
+
+    // ---------- 加入购物车 ----------
+    function addToCart(id) {
+      const item = historyItems.find(i => i.id === id);
+      if (!item || item.unavailable) return;
+
+      showToast('已加入购物车');
+
+      // 通知父窗口更新购物车
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'cartUpdated' }, '*');
+      }
+    }
+
+    // ---------- 返回 ----------
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigateBack' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    // ---------- Toast ----------
+    function showToast(msg) {
+      var old = document.querySelector('.his-toast');
+      if (old) old.remove();
+      var el = document.createElement('div');
+      el.className = 'his-toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 1500);
+    }
+
+    // ---------- Init ----------
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

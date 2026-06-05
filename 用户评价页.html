@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>写评价 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f4ff;
+      --success: #52c41a;
+      --warning: #faad14;
+      --error: #f5222d;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --text-tertiary: #999999;
+      --border-color: #f0f0f0;
+      --bg-color: #f5f5f5;
+    }
+
+    body { margin: 0; background: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    /* ===== 顶部导航 ===== */
+    .wr-header {
+      background: #fff;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .wr-back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .wr-back:active { opacity: 0.6; }
+    .wr-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* ===== 商品评价列表 ===== */
+    .wr-products {
+      padding: 12px;
+    }
+    .wr-product-card {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .wr-product-header {
+      padding: 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .wr-product-info {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .wr-product-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f5f5f5;
+      flex-shrink: 0;
+    }
+    .wr-product-detail {
+      flex: 1;
+      min-width: 0;
+    }
+    .wr-product-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .wr-product-spec {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .wr-product-price {
+      font-size: 14px;
+      color: var(--error);
+      font-weight: 600;
+    }
+
+    /* ===== 评价操作栏 ===== */
+    .wr-global-bar {
+      background: #fff;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .wr-global-info {
+      display: flex;
+      align-items: center;
+    }
+    .wr-global-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .wr-global-label span {
+      color: var(--error);
+      font-weight: 600;
+    }
+    .wr-global-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wr-quick-good {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 12px;
+      background: linear-gradient(135deg, #52c41a, #73d13d);
+      color: #fff;
+      font-size: 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .wr-quick-good:active {
+      opacity: 0.8;
+      transform: scale(0.95);
+    }
+    .wr-quick-good i {
+      font-size: 11px;
+    }
+    .wr-anonymous {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 14px;
+      background: #f5f5f5;
+      transition: all 0.2s;
+    }
+    .wr-anonymous:active {
+      background: #eee;
+    }
+    .wr-anonymous input {
+      display: none;
+    }
+    .wr-anonymous-check {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #d9d9d9;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .wr-anonymous input:checked + .wr-anonymous-check {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .wr-anonymous input:checked + .wr-anonymous-check::after {
+      content: '';
+      width: 4px;
+      height: 7px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+
+    /* ===== 评价选项 ===== */
+    .wr-rating-options {
+      padding: 12px 14px;
+      background: #fafafa;
+    }
+    .wr-rating-label-inline {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .wr-rating-label-inline span {
+      color: var(--error);
+      font-weight: 600;
+    }
+    .wr-rating-btns {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .wr-rating-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 8px;
+      font-size: 13px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .wr-rating-btn:active {
+      transform: scale(0.97);
+    }
+    .wr-rating-btn.selected.bad {
+      border-color: var(--error);
+      background: #fff1f0;
+      color: var(--error);
+    }
+    .wr-rating-btn.selected.neutral {
+      border-color: var(--warning);
+      background: #fffbe6;
+      color: var(--warning);
+    }
+    .wr-rating-btn.selected.good {
+      border-color: var(--success);
+      background: #f6ffed;
+      color: var(--success);
+    }
+    .wr-rating-btn i {
+      font-size: 14px;
+    }
+
+    /* ===== 展开的评价内容区 ===== */
+    .wr-review-expand {
+      display: none;
+      padding: 14px;
+      background: #fff;
+      border-top: 1px dashed var(--border-color);
+    }
+    .wr-review-expand.show {
+      display: block;
+    }
+    .wr-textarea-wrap {
+      margin-bottom: 12px;
+    }
+    .wr-textarea-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .wr-textarea-title {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .wr-textarea-tip {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+    .wr-textarea {
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--text-primary);
+      resize: none;
+      line-height: 1.6;
+      background: #fafafa;
+    }
+    .wr-textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .wr-textarea::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    /* ===== 图片上传 ===== */
+    .wr-images-section {
+      margin-top: 12px;
+    }
+    .wr-images-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .wr-images-title {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .wr-images-tip {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+    .wr-images-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .wr-image-item {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: #f5f5f5;
+    }
+    .wr-image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .wr-image-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .wr-image-add {
+      width: 70px;
+      height: 70px;
+      border: 1px dashed #d9d9d9;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-tertiary);
+    }
+    .wr-image-add:active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .wr-image-add i {
+      font-size: 22px;
+    }
+    .wr-image-add span {
+      font-size: 10px;
+    }
+
+    /* ===== 提交按钮 ===== */
+    .wr-submit-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid var(--border-color);
+      z-index: 100;
+    }
+    .wr-submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1890FF, #40a9ff);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 22px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    }
+    .wr-submit-btn:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+    .wr-submit-btn.disabled {
+      background: #ccc;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* ===== 底部占位 ===== */
+    .wr-bottom-fill {
+      height: 90px;
+    }
+
+    /* ===== Toast ===== */
+    .wr-toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 22px;
+      border-radius: 22px;
+      z-index: 700;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* ===== 图片预览 ===== */
+    .wr-img-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 600;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .wr-img-overlay.show { display: flex; }
+    .wr-img-overlay img {
+      max-width: 95vw;
+      max-height: 90vh;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+    .wr-img-overlay-close {
+      position: absolute;
+      top: max(14px, env(safe-area-inset-top));
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="wr-page">
+
+    <!-- 顶部导航 -->
+    <div class="wr-header">
+      <div class="wr-back" onclick="goBack()">
+        <i class="fa fa-chevron-left"></i>
+      </div>
+      <div class="wr-title">写评价</div>
+    </div>
+
+    <!-- 评价操作栏 -->
+    <div class="wr-global-bar" id="wrGlobalBar">
+      <div class="wr-global-info">
+        <span class="wr-global-label">商品质量怎么样？<span id="wrGlobalCount">0</span>/<span id="wrTotalCount">0</span></span>
+      </div>
+      <div class="wr-global-actions">
+        <div class="wr-quick-good" onclick="setAllProductRating('good')">
+          <i class="fa fa-check"></i> 一键好评
+        </div>
+        <label class="wr-anonymous">
+          <input type="checkbox" id="wrGlobalAnonymous" onchange="toggleGlobalAnonymous(this.checked)">
+          <div class="wr-anonymous-check"></div>
+          <span>匿名</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 商品评价列表 -->
+    <div class="wr-products" id="wrProducts"></div>
+
+    <!-- 底部占位 -->
+    <div class="wr-bottom-fill"></div>
+
+  </div>
+
+  <!-- 提交按钮 -->
+  <div class="wr-submit-bar">
+    <div class="wr-submit-btn" id="wrSubmitBtn" onclick="submitReview()">
+      提交评价
+    </div>
+  </div>
+
+  <!-- 图片预览 -->
+  <div class="wr-img-overlay" id="wrImgOverlay" onclick="closeImgPreview()">
+    <div class="wr-img-overlay-close" onclick="closeImgPreview()">
+      <i class="fa fa-times"></i>
+    </div>
+    <img id="wrPreviewImg" src="" alt="">
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== 用户评价页 - 写评价 ===== */
+
+    let orderId = null;
+    let products = [];
+    let productRatings = {};  // { productId: { rating: '', anonymous: false, text: '', images: [] } }
+
+    // 模拟订单数据
+    const mockOrder = {
+      id: 12345,
+      products: [
+        {
+          id: 1,
+          name: '红烧狮子头套餐',
+          spec: '大份',
+          price: 28.8,
+          img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop'
+        },
+        {
+          id: 2,
+          name: '香菇鸡肉盖饭',
+          spec: '微辣',
+          price: 18.0,
+          img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop'
+        },
+        {
+          id: 3,
+          name: '紫菜蛋花汤',
+          spec: '中碗',
+          price: 6.0,
+          img: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=200&h=200&fit=crop'
+        },
+        {
+          id: 4,
+          name: '可乐',
+          spec: '330ml',
+          price: 4.0,
+          img: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?w=200&h=200&fit=crop'
+        }
+      ]
+    };
+
+    // ---------- 初始化 ----------
+    function init() {
+      const params = new URLSearchParams(location.search);
+      orderId = params.get('orderId') || '12345';
+      
+      // 加载订单商品
+      products = mockOrder.products;
+      
+      // 初始化商品评价状态
+      products.forEach(p => {
+        productRatings[p.id] = { rating: '', anonymous: false, text: '', images: [] };
+      });
+      
+      renderProducts();
+      updateSubmitBtn();
+    }
+
+    // ---------- 渲染商品列表 ----------
+    function renderProducts() {
+      const container = document.getElementById('wrProducts');
+      container.innerHTML = products.map(p => {
+        const rating = productRatings[p.id] || { rating: '', anonymous: false, text: '', images: [] };
+        const ratedCount = Object.values(productRatings).filter(r => r.rating).length;
+        
+        return `
+          <div class="wr-product-card" id="card_${p.id}">
+            <div class="wr-product-header">
+              <div class="wr-product-info">
+                <img class="wr-product-img" src="${p.img}" alt="${p.name}" onerror="this.style.display='none'">
+                <div class="wr-product-detail">
+                  <div class="wr-product-name">${p.name}</div>
+                  <div class="wr-product-spec">${p.spec}</div>
+                  <div class="wr-product-price">¥${p.price.toFixed(1)}</div>
+                </div>
+              </div>
+            </div>
+            <div class="wr-rating-options">
+              <div class="wr-rating-btns">
+                <div class="wr-rating-btn bad ${rating.rating === 'bad' ? 'selected' : ''}" onclick="setProductRating(${p.id}, 'bad')">
+                  <i class="fa fa-frown-o"></i> 差评
+                </div>
+                <div class="wr-rating-btn neutral ${rating.rating === 'neutral' ? 'selected' : ''}" onclick="setProductRating(${p.id}, 'neutral')">
+                  <i class="fa fa-meh-o"></i> 一般
+                </div>
+                <div class="wr-rating-btn good ${rating.rating === 'good' ? 'selected' : ''}" onclick="setProductRating(${p.id}, 'good')">
+                  <i class="fa fa-smile-o"></i> 好评
+                </div>
+              </div>
+            </div>
+            <div class="wr-review-expand ${rating.rating ? 'show' : ''}" id="expand_${p.id}">
+              <div class="wr-textarea-wrap">
+                <div class="wr-textarea-header">
+                  <span class="wr-textarea-title">评价内容</span>
+                  <span class="wr-textarea-tip" id="charCount_${p.id}">0/500</span>
+                </div>
+                <textarea class="wr-textarea" id="text_${p.id}" placeholder="走心评价会创造出更多好货哦~" maxlength="500" oninput="updateText(${p.id}, this.value)">${rating.text}</textarea>
+              </div>
+              <div class="wr-images-section">
+                <div class="wr-images-header">
+                  <span class="wr-images-title">添加图片</span>
+                  <span class="wr-images-tip">上传图片有机会获得更多积分</span>
+                </div>
+                <div class="wr-images-list" id="images_${p.id}">
+                  ${renderImageList(p.id, rating.images)}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      updateGlobalCount();
+    }
+
+    // ---------- 渲染图片列表 ----------
+    function renderImageList(productId, images) {
+      const imgs = productRatings[productId]?.images || images || [];
+      let html = imgs.map((src, idx) => `
+        <div class="wr-image-item">
+          <img src="${src}" alt="评价图片" onclick="previewImage('${src}')">
+          <div class="wr-image-remove" onclick="removeImage(${productId}, ${idx})">
+            <i class="fa fa-times"></i>
+          </div>
+        </div>
+      `).join('');
+      
+      if (imgs.length < 9) {
+        html += `
+          <div class="wr-image-add" onclick="addImage(${productId})">
+            <i class="fa fa-plus"></i>
+            <span>添加图片</span>
+          </div>
+        `;
+      }
+      
+      return html;
+    }
+
+    // ---------- 更新全局计数 ----------
+    function updateGlobalCount() {
+      const ratedCount = Object.values(productRatings).filter(r => r.rating).length;
+      const globalCountEl = document.getElementById('wrGlobalCount');
+      const totalCountEl = document.getElementById('wrTotalCount');
+      if (globalCountEl) globalCountEl.textContent = ratedCount;
+      if (totalCountEl) totalCountEl.textContent = products.length;
+    }
+
+    // ---------- 切换全局匿名 ----------
+    function toggleGlobalAnonymous(checked) {
+      products.forEach(p => {
+        productRatings[p.id].anonymous = checked;
+      });
+    }
+
+    // ---------- 设置商品评价 ----------
+    function setProductRating(productId, rating) {
+      const currentRating = productRatings[productId]?.rating;
+      
+      // 如果点击相同选项，则取消选择
+      if (currentRating === rating) {
+        productRatings[productId].rating = '';
+      } else {
+        productRatings[productId].rating = rating;
+      }
+      
+      renderProducts();
+      updateSubmitBtn();
+    }
+
+    // ---------- 一键好评 ----------
+    function setAllProductRating(rating) {
+      products.forEach(p => {
+        productRatings[p.id].rating = rating;
+      });
+      renderProducts();
+      updateSubmitBtn();
+      showToast('已全部设为好评', 'success');
+    }
+
+    // ---------- 切换匿名 ----------
+    function toggleAnonymous(productId, checked) {
+      productRatings[productId].anonymous = checked;
+    }
+
+    // ---------- 更新文本 ----------
+    function updateText(productId, value) {
+      productRatings[productId].text = value;
+      const countEl = document.getElementById(`charCount_${productId}`);
+      if (countEl) {
+        countEl.textContent = `${value.length}/500`;
+      }
+    }
+
+    // ---------- 添加图片 ----------
+    function addImage(productId) {
+      const sampleImages = [
+        'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=200&h=200&fit=crop',
+        'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop',
+        'https://images.unsplash.com/photo-1587131782738-de30ea91a542?w=200&h=200&fit=crop',
+        'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+        'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop'
+      ];
+      
+      const images = productRatings[productId].images;
+      if (images.length >= 9) {
+        showToast('最多上传9张图片');
+        return;
+      }
+      
+      const randomImg = sampleImages[Math.floor(Math.random() * sampleImages.length)];
+      images.push(randomImg);
+      
+      const container = document.getElementById(`images_${productId}`);
+      if (container) {
+        container.innerHTML = renderImageList(productId, images);
+      }
+    }
+
+    // ---------- 删除图片 ----------
+    function removeImage(productId, idx) {
+      productRatings[productId].images.splice(idx, 1);
+      const container = document.getElementById(`images_${productId}`);
+      if (container) {
+        container.innerHTML = renderImageList(productId, productRatings[productId].images);
+      }
+    }
+
+    // ---------- 更新提交按钮状态 ----------
+    function updateSubmitBtn() {
+      const btn = document.getElementById('wrSubmitBtn');
+      let ratedCount = 0;
+      products.forEach(p => {
+        if (productRatings[p.id] && productRatings[p.id].rating) {
+          ratedCount++;
+        }
+      });
+
+      if (ratedCount === products.length) {
+        btn.classList.remove('disabled');
+      } else {
+        btn.classList.add('disabled');
+      }
+    }
+
+    // ---------- 提交评价 ----------
+    function submitReview() {
+      const btn = document.getElementById('wrSubmitBtn');
+
+      // 校验是否已为所有商品评价
+      const unratedProducts = products.filter(p => {
+        return !productRatings[p.id] || !productRatings[p.id].rating;
+      });
+
+      if (unratedProducts.length > 0) {
+        showToast('请至少评价一件商品');
+        return;
+      }
+
+      // 校验通过，提交评价
+      btn.textContent = '提交中...';
+      btn.classList.add('disabled');
+
+      setTimeout(() => {
+        showToast('评价成功', 'success');
+        setTimeout(() => {
+          goBack();
+        }, 1500);
+      }, 1000);
+    }
+
+    // ---------- 图片预览 ----------
+    function previewImage(src) {
+      document.getElementById('wrPreviewImg').src = src;
+      document.getElementById('wrImgOverlay').classList.add('show');
+    }
+
+    function closeImgPreview() {
+      document.getElementById('wrImgOverlay').classList.remove('show');
+    }
+
+    // ---------- 导航 ----------
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigateBack' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    // ---------- Toast ----------
+    function showToast(msg, type) {
+      var old = document.querySelector('.wr-toast');
+      if (old) old.remove();
+      var el = document.createElement('div');
+      el.className = 'wr-toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2000);
+    }
+
+    // ---------- 接收来自父窗口的消息 ----------
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'setOrder' && e.data.orderId) {
+        orderId = e.data.orderId;
+        console.log('收到订单ID:', orderId);
+      }
+    });
+
+    // ---------- Init ----------
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

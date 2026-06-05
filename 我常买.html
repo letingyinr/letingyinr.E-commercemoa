@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>我常买 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f4ff;
+      --success: #52c41a;
+      --warning: #faad14;
+      --error: #f5222d;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --text-tertiary: #999999;
+      --border-color: #f0f0f0;
+      --bg-color: #f5f5f5;
+    }
+
+    body { margin: 0; background: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    /* ===== 顶部导航 ===== */
+    .freq-header {
+      background: #fff;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .freq-back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .freq-back:active { opacity: 0.6; }
+    .freq-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      pointer-events: none;
+    }
+
+    /* ===== 标签切换 ===== */
+    .freq-tabs {
+      background: #fff;
+      padding: 12px 16px;
+      display: flex;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .freq-tab {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      padding-bottom: 8px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .freq-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .freq-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 1px;
+    }
+
+    /* ===== 筛选栏 ===== */
+    .freq-filter {
+      background: #fff;
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .freq-filter::-webkit-scrollbar { display: none; }
+    .freq-filter-btn {
+      padding: 6px 12px;
+      background: #f5f5f5;
+      color: var(--text-secondary);
+      font-size: 12px;
+      border-radius: 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .freq-filter-btn.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* ===== 内容区 ===== */
+    .freq-content {
+      padding: 12px;
+    }
+
+    /* ===== 时间分组 ===== */
+    .freq-time-group {
+      margin-bottom: 16px;
+    }
+    .freq-time-title {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+    .freq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ===== 商品项 ===== */
+    .freq-item {
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .freq-item:active { opacity: 0.8; }
+    .freq-item.unavailable { opacity: 0.7; }
+    .freq-item-img {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f5f5f5;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .freq-item-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .freq-unavailable-tag {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 2px 6px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 10px;
+      border-radius: 3px;
+    }
+    .freq-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .freq-item-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.3;
+    }
+    .freq-item-spec {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .freq-item-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .freq-item-price {
+      font-size: 15px;
+      color: var(--error);
+      font-weight: 700;
+    }
+    .freq-item-market {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-decoration: line-through;
+    }
+    .freq-item-times {
+      font-size: 12px;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .freq-item-add {
+      width: 30px;
+      height: 30px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      align-self: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .freq-item-add:active { transform: scale(0.9); }
+    .freq-item-add.disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* ===== 空状态 ===== */
+    .freq-empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-tertiary);
+    }
+    .freq-empty i {
+      font-size: 60px;
+      color: #d9d9d9;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .freq-empty p {
+      font-size: 14px;
+      margin: 0;
+    }
+
+    /* ===== Toast ===== */
+    .freq-toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 22px;
+      border-radius: 22px;
+      z-index: 700;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="freq-page">
+    <!-- 顶部导航 -->
+    <div class="freq-header">
+      <div class="freq-back" onclick="goBack()">
+        <i class="fa fa-chevron-left"></i>
+      </div>
+      <div class="freq-title">我常买</div>
+    </div>
+
+    <!-- 标签切换 -->
+    <div class="freq-tabs">
+      <div class="freq-tab active" id="tabHistory" onclick="switchTab('history')">历史买过</div>
+      <div class="freq-tab" id="tabHot" onclick="switchTab('hot')">大家都在买</div>
+    </div>
+
+    <!-- 筛选栏 -->
+    <div class="freq-filter" id="freqFilter">
+      <div class="freq-filter-btn active" onclick="setSort('time-desc')">时间（倒序）</div>
+      <div class="freq-filter-btn" onclick="setSort('times-desc')">购买次数（从高到低）</div>
+      <div class="freq-filter-btn" onclick="setSort('category')">按品类筛选</div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="freq-content" id="freqContent"></div>
+
+    <!-- 空状态 -->
+    <div class="freq-empty" id="freqEmpty" style="display:none;">
+      <i class="fa fa-shopping-bag"></i>
+      <p>暂无相关商品</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== 我常买 ===== */
+
+    let currentTab = 'history';
+    let currentSort = 'time-desc';
+    let historyProducts = [];
+    let hotProducts = [];
+
+    // 模拟历史购买数据
+    const mockHistoryProducts = [
+      {
+        id: 101,
+        name: '红烧狮子头套餐',
+        spec: '大份',
+        price: 28.8,
+        marketPrice: 35.0,
+        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+        times: 12,
+        timeGroup: '一个月内购买',
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 102,
+        name: '香菇鸡肉盖饭',
+        spec: '微辣',
+        price: 18.0,
+        marketPrice: 22.0,
+        img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop',
+        times: 8,
+        timeGroup: '一个月内购买',
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 103,
+        name: '酸菜鱼套餐',
+        spec: '中辣',
+        price: 32.0,
+        marketPrice: 38.0,
+        img: 'https://images.unsplash.com/photo-1587131782738-de30ea91a542?w=200&h=200&fit=crop',
+        times: 5,
+        timeGroup: '三个月内购买',
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 104,
+        name: '宫保鸡丁盖饭',
+        spec: '标准',
+        price: 20.0,
+        marketPrice: 25.0,
+        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop',
+        times: 15,
+        timeGroup: '三个月内购买',
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 105,
+        name: '卤牛肉拼盘',
+        spec: '中份',
+        price: 38.0,
+        marketPrice: 45.0,
+        img: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=200&h=200&fit=crop',
+        times: 6,
+        timeGroup: '半年内购买',
+        category: '卤味',
+        unavailable: false
+      },
+      {
+        id: 106,
+        name: '番茄炒蛋套餐',
+        spec: '标准',
+        price: 16.0,
+        marketPrice: 20.0,
+        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop',
+        times: 20,
+        timeGroup: '半年内购买',
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 107,
+        name: '可乐',
+        spec: '330ml',
+        price: 4.0,
+        marketPrice: 5.0,
+        img: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?w=200&h=200&fit=crop',
+        times: 30,
+        timeGroup: '一个月内购买',
+        category: '饮料',
+        unavailable: false
+      },
+      {
+        id: 108,
+        name: '已下架商品',
+        spec: '标准',
+        price: 15.0,
+        marketPrice: 18.0,
+        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+        times: 3,
+        timeGroup: '三个月内购买',
+        category: '主食',
+        unavailable: true
+      }
+    ];
+
+    // 模拟热门购买数据
+    const mockHotProducts = [
+      {
+        id: 201,
+        name: '红烧狮子头套餐',
+        spec: '大份',
+        price: 28.8,
+        marketPrice: 35.0,
+        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+        times: 156,
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 202,
+        name: '可乐',
+        spec: '330ml',
+        price: 4.0,
+        marketPrice: 5.0,
+        img: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?w=200&h=200&fit=crop',
+        times: 142,
+        category: '饮料',
+        unavailable: false
+      },
+      {
+        id: 203,
+        name: '宫保鸡丁盖饭',
+        spec: '标准',
+        price: 20.0,
+        marketPrice: 25.0,
+        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop',
+        times: 128,
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 204,
+        name: '番茄炒蛋套餐',
+        spec: '标准',
+        price: 16.0,
+        marketPrice: 20.0,
+        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop',
+        times: 115,
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 205,
+        name: '香菇鸡肉盖饭',
+        spec: '微辣',
+        price: 18.0,
+        marketPrice: 22.0,
+        img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop',
+        times: 98,
+        category: '主食',
+        unavailable: false
+      },
+      {
+        id: 206,
+        name: '酸菜鱼套餐',
+        spec: '中辣',
+        price: 32.0,
+        marketPrice: 38.0,
+        img: 'https://images.unsplash.com/photo-1587131782738-de30ea91a542?w=200&h=200&fit=crop',
+        times: 87,
+        category: '主食',
+        unavailable: false
+      }
+    ];
+
+    // ---------- 初始化 ----------
+    function init() {
+      historyProducts = [...mockHistoryProducts];
+      hotProducts = [...mockHotProducts];
+      renderProducts();
+    }
+
+    // ---------- 切换标签 ----------
+    function switchTab(tab) {
+      currentTab = tab;
+
+      document.getElementById('tabHistory').classList.toggle('active', tab === 'history');
+      document.getElementById('tabHot').classList.toggle('active', tab === 'hot');
+
+      // 显示/隐藏筛选栏
+      document.getElementById('freqFilter').style.display = tab === 'history' ? 'flex' : 'none';
+
+      // 重置排序
+      currentSort = 'time-desc';
+      document.querySelectorAll('.freq-filter-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === 0);
+      });
+
+      renderProducts();
+    }
+
+    // ---------- 设置排序 ----------
+    function setSort(sort) {
+      currentSort = sort;
+
+      document.querySelectorAll('.freq-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      renderProducts();
+    }
+
+    // ---------- 按时间分组 ----------
+    function groupByTime(items) {
+      const groups = {};
+      items.forEach(item => {
+        if (!groups[item.timeGroup]) {
+          groups[item.timeGroup] = [];
+        }
+        groups[item.timeGroup].push(item);
+      });
+      return groups;
+    }
+
+    // ---------- 排序数据 ----------
+    function sortProducts(items) {
+      const sorted = [...items];
+
+      switch (currentSort) {
+        case 'time-desc':
+          // 保持原有顺序（已按时间倒序）
+          break;
+        case 'times-desc':
+          sorted.sort((a, b) => b.times - a.times);
+          break;
+        case 'category':
+          sorted.sort((a, b) => a.category.localeCompare(b.category));
+          break;
+      }
+
+      return sorted;
+    }
+
+    // ---------- 渲染商品列表 ----------
+    function renderProducts() {
+      const container = document.getElementById('freqContent');
+      const emptyEl = document.getElementById('freqEmpty');
+
+      let products = currentTab === 'history' ? historyProducts : hotProducts;
+
+      if (products.length === 0) {
+        container.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+
+      // 排序
+      products = sortProducts(products);
+
+      // 如果是"历史买过"且按时间排序，按时间分组
+      if (currentTab === 'history' && currentSort === 'time-desc') {
+        const groups = groupByTime(products);
+        container.innerHTML = Object.keys(groups).map(time => `
+          <div class="freq-time-group">
+            <div class="freq-time-title">${time}</div>
+            <div class="freq-list">
+              ${groups[time].map(item => renderItem(item)).join('')}
+            </div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = `
+          <div class="freq-list">
+            ${products.map(item => renderItem(item)).join('')}
+          </div>
+        `;
+      }
+    }
+
+    // ---------- 渲染单个商品项 ----------
+    function renderItem(item) {
+      return `
+        <div class="freq-item ${item.unavailable ? 'unavailable' : ''}" onclick="goToDetail(${item.id})">
+          <div class="freq-item-img">
+            <img src="${item.img}" alt="${item.name}" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;font-size:10px;\\'>图片</div>'">
+            ${item.unavailable ? '<span class="freq-unavailable-tag">已下架</span>' : ''}
+          </div>
+          <div class="freq-item-info">
+            <div class="freq-item-name">${item.name}</div>
+            <div class="freq-item-spec">${item.spec}</div>
+            <div class="freq-item-price-row">
+              <span class="freq-item-price">¥${item.price.toFixed(1)}</span>
+              <span class="freq-item-market">¥${item.marketPrice.toFixed(1)}</span>
+            </div>
+            <div class="freq-item-times">已购 ${item.times} 次</div>
+          </div>
+          <div class="freq-item-add ${item.unavailable ? 'disabled' : ''}" onclick="event.stopPropagation(); addToCart(${item.id})">
+            <i class="fa fa-plus"></i>
+          </div>
+        </div>
+      `;
+    }
+
+    // ---------- 加入购物车 ----------
+    function addToCart(id) {
+      const products = currentTab === 'history' ? historyProducts : hotProducts;
+      const item = products.find(p => p.id === id);
+      if (!item || item.unavailable) return;
+
+      showToast('已加入购物车');
+
+      // 通知父窗口更新购物车
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'cartUpdated' }, '*');
+      }
+    }
+
+    // ---------- 跳转商品详情 ----------
+    function goToDetail(id) {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigate', id: id }, '*');
+      } else {
+        location.href = '商品详情页.html?id=' + id;
+      }
+    }
+
+    // ---------- 返回 ----------
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigateBack' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    // ---------- Toast ----------
+    function showToast(msg) {
+      var old = document.querySelector('.freq-toast');
+      if (old) old.remove();
+      var el = document.createElement('div');
+      el.className = 'freq-toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 1500);
+    }
+
+    // ---------- Init ----------
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

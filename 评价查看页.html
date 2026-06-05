@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>评价查看 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f7ff;
+      --primary-dark: #096dd9;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666;
+      --text-tertiary: #999;
+      --border-color: #f0f0f0;
+      --bg-color: #f5f5f5;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    body { margin: 0; background: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    /* ===== 顶部导航 ===== */
+    .rv-header {
+      background: #fff;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .rv-back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .rv-back:active { opacity: 0.6; }
+    .rv-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* ===== 商品信息栏 ===== */
+    .rv-product-bar {
+      background: #fff;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1px;
+    }
+    .rv-product-img {
+      width: 50px;
+      height: 50px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #f5f5f5;
+    }
+    .rv-product-info { flex: 1; min-width: 0; }
+    .rv-product-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .rv-product-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f5222d;
+      margin-top: 3px;
+    }
+
+    /* ===== 评价概览 ===== */
+    .rv-summary {
+      background: #fff;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .rv-summary-score {
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .rv-summary-num {
+      font-size: 28px;
+      font-weight: 700;
+      color: #f5222d;
+      line-height: 1;
+    }
+    .rv-summary-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+    .rv-summary-stars {
+      color: #ffc107;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    .rv-summary-bars {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .rv-summary-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+    .rv-summary-bar-label { width: 24px; }
+    .rv-summary-bar-track {
+      flex: 1;
+      height: 6px;
+      background: #f0f0f0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .rv-summary-bar-fill {
+      height: 100%;
+      background: #f5222d;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .rv-summary-bar-count { width: 30px; text-align: right; }
+
+    /* ===== 筛选标签 ===== */
+    .rv-filters {
+      background: #fff;
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .rv-filter-tag {
+      padding: 5px 14px;
+      border-radius: 16px;
+      font-size: 12px;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .rv-filter-tag:active { opacity: 0.7; }
+    .rv-filter-tag.active {
+      background: #f5222d;
+      border-color: #f5222d;
+      color: #fff;
+    }
+
+    /* ===== 评价列表 ===== */
+    .rv-list { padding: 0 14px 20px; }
+
+    .rv-item {
+      background: #fff;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .rv-item:last-child { border-bottom: none; }
+
+    .rv-user {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .rv-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .rv-user-info { flex: 1; min-width: 0; }
+    .rv-user-name {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 3px;
+    }
+    .rv-stars { color: #ffc107; font-size: 12px; letter-spacing: 1px; }
+    .rv-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+    .rv-time { font-size: 11px; color: var(--text-tertiary); }
+    .rv-spec { font-size: 11px; color: var(--text-tertiary); }
+
+    .rv-content {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .rv-images {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .rv-images::-webkit-scrollbar { display: none; }
+    .rv-image-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+      cursor: pointer;
+      background: #f5f5f5;
+    }
+
+    .rv-like {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 3px 8px 3px 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: #fff;
+      transition: all 0.2s;
+      user-select: none;
+      z-index: 2;
+    }
+    .rv-like:active { transform: scale(0.95); }
+    .rv-like.liked {
+      color: #f5222d;
+      border-color: #f5222d;
+      background: rgba(245, 34, 45, 0.06);
+    }
+    .rv-like i { font-size: 13px; }
+    .rv-like span { font-size: 11px; }
+
+    /* ===== 图片预览 ===== */
+    .rv-img-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 600;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .rv-img-overlay.show { display: flex; }
+    .rv-img-overlay img {
+      max-width: 95vw;
+      max-height: 90vh;
+      border-radius: var(--radius-sm);
+      object-fit: contain;
+    }
+    .rv-img-overlay-close {
+      position: absolute;
+      top: max(14px, env(safe-area-inset-top));
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    /* ===== 空状态 ===== */
+    .rv-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-tertiary);
+    }
+    .rv-empty i { font-size: 48px; margin-bottom: 12px; display: block; color: #d9d9d9; }
+    .rv-empty p { font-size: 14px; margin: 0; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 22px;
+      border-radius: 22px;
+      z-index: 700;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="rv-page" id="rvPage">
+
+    <!-- 顶部导航 -->
+    <div class="rv-header">
+      <div class="rv-back" onclick="goBack()">
+        <i class="fa fa-chevron-left"></i>
+      </div>
+      <div class="rv-title">评价查看</div>
+    </div>
+
+    <!-- 商品信息 -->
+    <div class="rv-product-bar" id="rvProductBar">
+      <img class="rv-product-img" id="rvProductImg" src="" alt="">
+      <div class="rv-product-info">
+        <div class="rv-product-name" id="rvProductName">加载中...</div>
+        <div class="rv-product-price" id="rvProductPrice">¥0.0</div>
+      </div>
+    </div>
+
+    <!-- 评价概览 -->
+    <div class="rv-summary" id="rvSummary">
+      <div class="rv-summary-score">
+        <div class="rv-summary-num" id="rvAvgScore">4.9</div>
+        <div class="rv-summary-label">综合评分</div>
+        <div class="rv-summary-stars" id="rvAvgStars"></div>
+      </div>
+      <div class="rv-summary-bars" id="rvSummaryBars"></div>
+    </div>
+
+    <!-- 筛选标签 -->
+    <div class="rv-filters" id="rvFilters">
+      <div class="rv-filter-tag active" onclick="setFilter('all')">全部</div>
+      <div class="rv-filter-tag" onclick="setFilter('good')">好评</div>
+      <div class="rv-filter-tag" onclick="setFilter('bad')">差评</div>
+      <div class="rv-filter-tag" onclick="setFilter('newest')">最新</div>
+      <div class="rv-filter-tag" onclick="setFilter('imgs')">带图评价</div>
+    </div>
+
+    <!-- 评价列表 -->
+    <div class="rv-list" id="rvList"></div>
+
+  </div>
+
+  <!-- 图片预览 -->
+  <div class="rv-img-overlay" id="rvImgOverlay" onclick="closeImgPreview()">
+    <div class="rv-img-overlay-close" onclick="closeImgPreview()">
+      <i class="fa fa-times"></i>
+    </div>
+    <img id="rvPreviewImg" src="" alt="">
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== 评价查看页 ===== */
+
+    let currentProductId = null;
+    let currentFilter = 'all';
+    let allReviews = [];
+    let likedReviews = {};
+
+    // Listen for setProduct from parent index.html
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'setProduct') {
+        currentProductId = parseInt(e.data.id);
+        loadReviews();
+      }
+    });
+
+    // ---------- 初始化 ----------
+    function init() {
+      const params = new URLSearchParams(location.search);
+      currentProductId = parseInt(params.get('id') || params.get('productId') || '1');
+      loadReviews();
+    }
+
+    // ---------- 生成评价数据 ----------
+    function loadReviews() {
+      const product = PRODUCTS.find(p => p.id === currentProductId);
+      if (!product) {
+        document.getElementById('rvList').innerHTML = '<div class="rv-empty"><i class="fa fa-meh-o"></i><p>商品不存在</p></div>';
+        return;
+      }
+
+      // 商品信息
+      document.getElementById('rvProductImg').src = product.img;
+      document.getElementById('rvProductImg').onerror = function() { this.style.display='none'; };
+      document.getElementById('rvProductName').textContent = product.name;
+      document.getElementById('rvProductPrice').textContent = '¥' + product.price.toFixed(1);
+
+      // 生成模拟评价
+      const rating = product.rate || (4.5 + Math.random() * 0.5);
+      const totalReviews = 28 + Math.floor(Math.random() * 20);
+
+      const names = ['张***', '李***', '王***', '赵***', '陈***', '刘***', '杨***', '黄***', '周***', '吴***', '徐***', '孙***', '马***', '朱***', '胡***', '林***', '郭***', '何***', '高***', '罗***'];
+      const specOpts = ['默认规格', '单个装', '约200g', '小份', '大份', '中杯', '中碗'];
+      const goodTexts = [
+        '味道很好，每天早上都会来买，价格实惠，分量足！',
+        '早餐必备，配豆浆完美，口感松软香甜，非常满意！',
+        '新鲜出炉的，口感超级好，会一直回购的，强烈推荐！',
+        '食堂出品必属精品，味道正宗，价格便宜，赞一个！',
+        '包装很用心，没有破损，送达很快，好评！',
+        '老顾客了，每次都满意，品质稳定，值得信赖！',
+        '非常好吃，家人都喜欢，已经推荐给朋友了！',
+        '比外面买的便宜多了，质量也很好，五星好评！',
+        '食材新鲜，干净卫生，吃得放心，继续支持！',
+        '性价比超高，这个价格能买到这么好吃的，太值了！',
+      ];
+      const badTexts = [
+        '味道一般，没有想象中好吃，有点失望。',
+        '分量有点少，价格偏贵，性价比一般。',
+        '送达有点慢，希望改进一下配送速度。',
+        '包装有点简陋，建议加强一下。',
+        '不如上次买的好吃，口感差了一些。',
+      ];
+      const imgSets = [
+        ['https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=400&fit=crop'],
+        ['https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&h=400&fit=crop'],
+        ['https://images.unsplash.com/photo-1587131782738-de30ea91a542?w=400&h=400&fit=crop'],
+        [],
+        ['https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=400&fit=crop', 'https://images.unsplash.com/photo-1568781269258-c95af457b944?w=400&h=400&fit=crop'],
+        [],
+        ['https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=400&h=400&fit=crop'],
+        [],
+      ];
+
+      allReviews = [];
+      for (var i = 0; i < totalReviews; i++) {
+        var star = Math.random() < 0.8 ? 5 : (Math.random() < 0.6 ? 4 : (Math.random() < 0.5 ? 3 : (Math.random() < 0.5 ? 2 : 1)));
+        var isGood = star >= 4;
+        var textArr = isGood ? goodTexts : badTexts;
+        var imgs = imgSets[i % imgSets.length];
+
+        var daysAgo = Math.floor(Math.random() * 90);
+        var d = new Date();
+        d.setDate(d.getDate() - daysAgo);
+        var timeStr = d.getFullYear() + '-' +
+          String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0');
+
+        allReviews.push({
+          id: i + 1,
+          name: names[i % names.length],
+          avatar: names[i % names.length].charCodeAt(0) % 8,
+          stars: star,
+          text: textArr[Math.floor(Math.random() * textArr.length)],
+          time: timeStr,
+          spec: specOpts[Math.floor(Math.random() * specOpts.length)],
+          imgs: imgs,
+          likeCount: Math.floor(Math.random() * 80),
+        });
+      }
+
+      renderSummary(rating, allReviews);
+      renderReviews();
+    }
+
+    // ---------- 渲染概览 ----------
+    function renderSummary(avg, reviews) {
+      document.getElementById('rvAvgScore').textContent = avg.toFixed(1);
+
+      var starHtml = '';
+      for (var i = 1; i <= 5; i++) {
+        if (i <= Math.round(avg)) starHtml += '<i class="fa fa-star"></i>';
+        else if (i - 0.5 <= avg) starHtml += '<i class="fa fa-star-half-alt"></i>';
+        else starHtml += '<i class="fa fa-star" style="color:#d9d9d9;"></i>';
+      }
+      document.getElementById('rvAvgStars').innerHTML = starHtml;
+
+      var counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      reviews.forEach(function(r) { counts[r.stars]++; });
+      var total = reviews.length;
+      var labels = ['1星', '2星', '3星', '4星', '5星'];
+      var barsHtml = '';
+      for (var i = 1; i <= 5; i++) {
+        var pct = total > 0 ? ((counts[i] / total) * 100).toFixed(0) : 0;
+        barsHtml += '<div class="rv-summary-bar">' +
+          '<span class="rv-summary-bar-label">' + labels[i - 1] + '</span>' +
+          '<div class="rv-summary-bar-track"><div class="rv-summary-bar-fill" style="width:' + pct + '%;"></div></div>' +
+          '<span class="rv-summary-bar-count">' + counts[i] + '</span></div>';
+      }
+      document.getElementById('rvSummaryBars').innerHTML = barsHtml;
+    }
+
+    // ---------- 筛选 ----------
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll('.rv-filter-tag').forEach(function(t) {
+        t.classList.toggle('active', t.textContent.trim() === (
+          f === 'all' ? '全部' :
+          f === 'good' ? '好评' :
+          f === 'bad' ? '差评' :
+          f === 'newest' ? '最新' :
+          f === 'imgs' ? '带图评价' : ''
+        ));
+      });
+      renderReviews();
+    }
+
+    // ---------- 渲染列表 ----------
+    function renderReviews() {
+      var filtered = allReviews.slice();
+
+      if (currentFilter === 'good') {
+        filtered = filtered.filter(function(r) { return r.stars >= 4; });
+      } else if (currentFilter === 'bad') {
+        filtered = filtered.filter(function(r) { return r.stars < 3; });
+      } else if (currentFilter === 'newest') {
+        filtered.sort(function(a, b) { return b.time.localeCompare(a.time); });
+      } else if (currentFilter === 'imgs') {
+        filtered = filtered.filter(function(r) { return r.imgs.length > 0; });
+      } else {
+        // all: 默认按时间倒序
+        filtered.sort(function(a, b) { return b.time.localeCompare(a.time); });
+      }
+
+      var listEl = document.getElementById('rvList');
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div class="rv-empty"><i class="fa fa-comments-o"></i><p>暂无相关评价</p></div>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(function(r) {
+        var starsHtml = '';
+        for (var i = 1; i <= 5; i++) {
+          starsHtml += i <= r.stars ? '<i class="fa fa-star"></i>' : '<i class="fa fa-star" style="color:#d9d9d9;"></i>';
+        }
+        var liked = likedReviews[r.id] || false;
+        var imgsHtml = r.imgs.map(function(src, idx) {
+          return '<img class="rv-image-thumb" src="' + src + '" alt="评价图片" onclick="previewImg(' + r.id + ',' + idx + ')" onerror="this.style.display=\'none\'">';
+        }).join('');
+        var specText = r.spec ? '<span class="rv-spec">规格：' + r.spec + '</span>' : '';
+
+        return '<div class="rv-item">' +
+          '<div class="rv-user">' +
+          '<div class="rv-avatar"><i class="fa fa-user"></i></div>' +
+          '<div class="rv-user-info">' +
+          '<div class="rv-user-name">' + r.name + '</div>' +
+          '<div class="rv-stars">' + starsHtml + '</div>' +
+          '<div class="rv-meta">' +
+          '<div class="rv-time">' + r.time + ' ' + specText + '</div>' +
+          '</div></div></div>' +
+          '<div class="rv-content">' + r.text + '</div>' +
+          (imgsHtml ? '<div class="rv-images">' + imgsHtml + '</div>' : '') +
+          '<div class="rv-like' + (liked ? ' liked' : '') + '" onclick="toggleLike(' + r.id + ', this)">' +
+          '<i class="' + (liked ? 'fa fa-heart' : 'fa fa-heart-o') + '"></i>' +
+          '<span>' + (r.likeCount + (liked ? 1 : 0)) + '</span>' +
+          '</div></div>';
+      }).join('');
+    }
+
+    // ---------- 点赞 ----------
+    function toggleLike(id, el) {
+      likedReviews[id] = !likedReviews[id];
+      el.classList.toggle('liked');
+      var icon = el.querySelector('i');
+      icon.className = likedReviews[id] ? 'fa fa-heart' : 'fa fa-heart-o';
+      var span = el.querySelector('span');
+      var base = allReviews.find(function(r) { return r.id === id; });
+      if (base) {
+        span.textContent = base.likeCount + (likedReviews[id] ? 1 : 0);
+      }
+    }
+
+    // ---------- 图片预览 ----------
+    function previewImg(reviewId, imgIdx) {
+      var review = allReviews.find(function(r) { return r.id === reviewId; });
+      if (!review || !review.imgs[imgIdx]) return;
+      document.getElementById('rvPreviewImg').src = review.imgs[imgIdx];
+      document.getElementById('rvImgOverlay').classList.add('show');
+    }
+
+    function closeImgPreview() {
+      document.getElementById('rvImgOverlay').classList.remove('show');
+    }
+
+    // ---------- 导航 ----------
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigateBack' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    // ---------- Toast ----------
+    function toast(msg) {
+      var old = document.querySelector('.toast');
+      if (old) old.remove();
+      var el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2000);
+    }
+
+    // ---------- Init ----------
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

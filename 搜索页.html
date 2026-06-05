@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>搜索 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .search-page { background: var(--bg-color); min-height: 100vh; position: relative; }
+    .search-header {
+      background: #fff;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .search-input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #f0f0f0;
+      border-radius: 20px;
+      padding: 8px 14px;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .search-input-wrap:focus-within {
+      background: #fff;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .search-input-wrap input {
+      flex: 1;
+      font-size: 14px;
+      background: transparent;
+      color: var(--text-primary);
+    }
+    .search-input-wrap input::placeholder { color: #bbb; }
+    .search-cancel {
+      font-size: 14px;
+      color: var(--primary);
+      cursor: pointer;
+      white-space: nowrap;
+      padding: 4px;
+    }
+    .search-cancel:active { opacity: 0.6; }
+
+    .search-body { padding-bottom: 20px; }
+
+    /* Hot Search */
+    .hot-section {
+      background: #fff;
+      padding: 16px 14px;
+    }
+    .hot-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .hot-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hot-header h3 i { color: var(--warning); font-size: 16px; }
+    .hot-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .hot-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: #f5f5f5;
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .hot-item:active { transform: scale(0.96); background: var(--primary-light); color: var(--primary); }
+    .hot-item .rank {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      background: #e0e0e0;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hot-item .rank.top { background: var(--error); }
+    .hot-item .rank.top2 { background: #ff7b00; }
+    .hot-item .rank.top3 { background: #ffa500; }
+
+    /* History */
+    .history-section {
+      background: #fff;
+      padding: 16px 14px;
+      margin-top: 8px;
+    }
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .history-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .history-header h3 i { color: var(--primary); }
+    .clear-history {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .clear-history:active { color: var(--error); }
+    .history-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: #f5f5f5;
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .history-item:active { transform: scale(0.96); }
+    .history-item .del-btn {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.2);
+      color: #fff;
+      font-size: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .history-item .del-btn:hover { background: var(--error); }
+
+    /* Associate */
+    .associate-section {
+      background: #fff;
+      display: none;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .associate-section.show {
+      display: block;
+      max-height: 400px;
+    }
+    .associate-mask {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 0;
+      background: rgba(0,0,0,0);
+      z-index: -1;
+    }
+    .associate-section .associate-item-wrap {
+      display: flex;
+      flex-direction: column;
+      max-height: 400px;
+      overflow-y: auto;
+      background: #fff;
+    }
+    .associate-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .associate-item:active { background: #f5f5f5; }
+    .associate-item i { color: var(--text-tertiary); font-size: 14px; }
+    .associate-item .keyword { flex: 1; font-size: 14px; color: var(--text-primary); }
+    .associate-item .keyword em { color: var(--primary); font-style: normal; font-weight: 600; }
+    .associate-item .arrow { color: var(--text-tertiary); font-size: 12px; }
+
+    /* Result */
+    .result-section { display: none; }
+    .result-header {
+      background: #fff;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .result-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 15px;
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: 4px;
+    }
+    .result-back:active { opacity: 0.6; }
+    .result-count {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      text-align: center;
+      flex: 1;
+    }
+    .result-tabs {
+      background: #fff;
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .result-tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .result-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .result-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 1px;
+    }
+    .result-tab i { font-size: 10px; margin-left: 2px; }
+    .result-content { padding-top: 0; }
+    .no-result {
+      text-align: center;
+      padding: 40px 20px;
+      background: #fff;
+    }
+    .no-result i { font-size: 60px; color: #e0e0e0; margin-bottom: 12px; }
+    .no-result h3 { font-size: 15px; color: var(--text-secondary); margin-bottom: 6px; }
+    .no-result p { font-size: 13px; color: var(--text-tertiary); margin-bottom: 16px; }
+    .no-result .tag { display: inline-flex; margin: 4px; cursor: pointer; padding: 6px 14px; border-radius: 20px; font-size: 13px; background: #f5f5f5; color: var(--text-primary); transition: all 0.2s; }
+    .no-result .tag:hover { background: var(--primary-light); color: var(--primary); }
+    .no-result .tag:active { transform: scale(0.96); }
+
+    .filter-bar-result {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      padding: 0 12px;
+      height: 44px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .filter-tab {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .filter-tab.active {
+      color: var(--primary);
+      font-weight: 500;
+    }
+    .filter-tab i { font-size: 10px; }
+
+    /* Screen Filter Panel */
+    .filter-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 600;
+      display: none;
+    }
+    .filter-panel.show { display: block; }
+    .filter-panel-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+    }
+    .filter-panel-body {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 280px;
+      max-width: 80%;
+      background: #fff;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+      padding-bottom: 60px;
+    }
+    .filter-panel.show .filter-panel-body {
+      transform: translateX(0);
+    }
+    .filter-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .filter-panel-header i { cursor: pointer; color: var(--text-tertiary); }
+    .filter-panel-header i:active { color: var(--text-primary); }
+    .filter-section { padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+    .filter-section h4 { font-size: 13px; color: var(--text-tertiary); margin-bottom: 10px; }
+    .filter-options { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-option {
+      padding: 6px 14px;
+      background: #f5f5f5;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .filter-option.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary);
+      font-weight: 500;
+    }
+    .filter-option:active { transform: scale(0.96); }
+    .filter-panel-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #fff;
+      border-top: 1px solid var(--border-color);
+    }
+    .filter-panel-footer button {
+      flex: 1;
+      padding: 10px;
+      border-radius: var(--radius-xl);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-reset { background: #f5f5f5; color: var(--text-primary); border: 1px solid #e0e0e0; }
+    .filter-confirm { background: var(--primary); color: #fff; }
+    .filter-confirm:active { background: var(--primary-dark); }
+  </style>
+</head>
+<body>
+  <div class="search-page" id="searchPage">
+    <!-- Search Header -->
+    <div class="search-header" id="searchHeader">
+      <span class="result-back" onclick="cancelSearch()" style="padding:4px 8px;">
+        <i class="fa fa-chevron-left" style="font-size:18px;color:var(--text-secondary);"></i>
+      </span>
+      <div class="search-input-wrap">
+        <i class="fa fa-search" style="color:#999;font-size:14px;"></i>
+        <input type="text" id="searchInput" placeholder="搜索好物" autocomplete="off">
+      </div>
+      <span class="search-cancel" onclick="handleSearchBtn()">搜索</span>
+    </div>
+
+    <div class="search-body" id="searchBody">
+      <!-- History -->
+      <div class="history-section" id="historySection">
+        <div class="history-header">
+          <h3><i class="fa fa-clock"></i> 历史搜索</h3>
+          <span class="clear-history" onclick="clearAllHistory()">
+            <i class="fa fa-trash-alt"></i> 清空
+          </span>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <!-- Hot Search -->
+      <div class="hot-section" id="hotSection">
+        <div class="hot-header">
+          <h3><i class="fa fa-fire"></i> 热门搜索</h3>
+        </div>
+        <div class="hot-list" id="hotList"></div>
+      </div>
+    </div>
+
+    <!-- Associate -->
+    <div class="associate-section" id="associateSection">
+      <div class="associate-mask" onclick="hideAssociate()"></div>
+      <div class="associate-item-wrap" id="associateList"></div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-section" id="resultSection">
+      <div class="result-header">
+        <span class="result-back" onclick="backFromResult()">
+          <i class="fa fa-chevron-left"></i>
+        </span>
+        <span class="result-count" id="resultCount"></span>
+        <span style="width:40px;"></span>
+      </div>
+      <div class="filter-bar-result" id="resultFilterBar">
+        <div class="filter-tab active" data-sort="default" onclick="sortResult('default', this)">综合</div>
+        <div class="filter-tab" data-sort="sales" onclick="sortResult('sales', this)">销量</div>
+        <div class="filter-tab" data-sort="price-asc" onclick="sortResult('price-asc', this)">
+          价格 <i class="fa fa-arrow-up"></i>
+        </div>
+        <div class="filter-tab" data-sort="price-desc" onclick="sortResult('price-desc', this)">
+          价格 <i class="fa fa-arrow-down"></i>
+        </div>
+        <div class="filter-tab" onclick="openFilterPanel()">
+          <i class="fa fa-sliders-h"></i> 筛选
+        </div>
+      </div>
+      <div class="result-content" id="resultContent">
+        <div class="product-grid" id="resultGrid"></div>
+        <div class="load-more" id="resultLoadMore" style="display:none;">加载中...</div>
+        <div class="no-result" id="noResult" style="display:none;">
+          <i class="fa fa-search"></i>
+          <h3>未找到相关商品</h3>
+          <p>试试其他关键词，或看看下面的推荐</p>
+          <div id="similarProducts"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="filter-panel" id="filterPanel">
+      <div class="filter-panel-overlay" onclick="closeFilterPanel()"></div>
+      <div class="filter-panel-body">
+        <div class="filter-panel-header">
+          <span>筛选</span>
+          <i class="fa fa-times" onclick="closeFilterPanel()"></i>
+        </div>
+        <div class="filter-section">
+          <h4>品类</h4>
+          <div class="filter-options">
+            <div class="filter-option active" data-filter="all" onclick="toggleFilter(this, 'cat')">全部</div>
+            <div class="filter-option" data-filter="面点" onclick="toggleFilter(this, 'cat')">面点</div>
+            <div class="filter-option" data-filter="卤味" onclick="toggleFilter(this, 'cat')">卤味</div>
+            <div class="filter-option" data-filter="糕点" onclick="toggleFilter(this, 'cat')">糕点</div>
+            <div class="filter-option" data-filter="自制品" onclick="toggleFilter(this, 'cat')">自制品</div>
+          </div>
+        </div>
+        <div class="filter-section">
+          <h4>价格区间</h4>
+          <div class="filter-options">
+            <div class="filter-option active" data-filter="all" onclick="toggleFilter(this, 'price')">不限</div>
+            <div class="filter-option" data-filter="0-10" onclick="toggleFilter(this, 'price')">¥10以下</div>
+            <div class="filter-option" data-filter="10-30" onclick="toggleFilter(this, 'price')">¥10-30</div>
+            <div class="filter-option" data-filter="30-60" onclick="toggleFilter(this, 'price')">¥30-60</div>
+            <div class="filter-option" data-filter="60-999" onclick="toggleFilter(this, 'price')">¥60以上</div>
+          </div>
+        </div>
+        <div class="filter-section">
+          <h4>优惠</h4>
+          <div class="filter-options">
+            <div class="filter-option" data-filter="discount" onclick="toggleFilter(this, 'discount')">有折扣</div>
+            <div class="filter-option" data-filter="tag" onclick="toggleFilter(this, 'tag')">限时特价</div>
+            <div class="filter-option" data-filter="new" onclick="toggleFilter(this, 'tag')">新品</div>
+          </div>
+        </div>
+        <div class="filter-panel-footer">
+          <button class="filter-reset" onclick="resetFilter()">重置</button>
+          <button class="filter-confirm" onclick="applyFilter()">确定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // ===== Search Page Logic =====
+    let currentKeyword = '';
+    let searchResultProducts = [];
+    let currentSort = 'default';
+    let currentFilter = { cat: 'all', price: 'all', discount: false, tag: '' };
+
+    function initSearchPage() {
+      renderHotSearch();
+      renderHistory();
+      setupSearchInput();
+    }
+
+    function renderHotSearch() {
+      const list = document.getElementById('hotList');
+      list.innerHTML = HOT_SEARCH.map((kw, i) => `
+        <div class="hot-item" onclick="doSearch('${kw}')">
+          <span class="rank ${i === 0 ? 'top' : i === 1 ? 'top2' : i === 2 ? 'top3' : ''}">${i + 1}</span>
+          <span>${kw}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      const history = SearchHistory.get();
+      if (history.length === 0) {
+        document.getElementById('historySection').style.display = 'none';
+        return;
+      }
+      document.getElementById('historySection').style.display = '';
+      list.innerHTML = history.map(kw => `
+        <div class="history-item" onclick="doSearch('${kw}')">
+          <i class="fa fa-history" style="font-size:12px;color:#bbb;"></i>
+          <span>${kw}</span>
+          <span class="del-btn" onclick="event.stopPropagation();deleteHistory('${kw}')">
+            <i class="fa fa-times"></i>
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function deleteHistory(kw) {
+      SearchHistory.remove(kw);
+      renderHistory();
+    }
+
+    function clearAllHistory() {
+      SearchHistory.clear();
+      renderHistory();
+      showToast('搜索历史已清空', 'success');
+    }
+
+    function setupSearchInput() {
+      const input = document.getElementById('searchInput');
+      let typingTimer = null;
+
+      input.addEventListener('input', () => {
+        clearTimeout(typingTimer);
+        const val = input.value.trim();
+        if (val.length > 0) {
+          typingTimer = setTimeout(() => showAssociate(val), 300);
+        } else {
+          hideAssociate();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const val = input.value.trim();
+          if (val) doSearch(val);
+        }
+      });
+    }
+
+    function focusSearch() {
+      document.getElementById('searchInput').focus();
+    }
+
+    function showAssociate(keyword) {
+      const section = document.getElementById('associateSection');
+      const list = document.getElementById('associateList');
+      
+      // 搜索匹配
+      const keywords = HOT_SEARCH.filter(k => k.includes(keyword));
+      const extra = ['鲜肉包子', '卤牛肉', '豆浆', '红糖馒头'].filter(k => k.includes(keyword));
+      // 同时搜索商品名称
+      const productMatches = PRODUCTS.filter(p => 
+        p.name.includes(keyword) || p.category.includes(keyword)
+      ).map(p => p.name);
+
+      const all = [...new Set([...keywords, ...extra, ...productMatches])].slice(0, 15);
+
+      if (all.length === 0) {
+        hideAssociate();
+        return;
+      }
+
+      list.innerHTML = all.map(k => {
+        const regex = new RegExp(`(${keyword})`, 'g');
+        const highlighted = k.replace(regex, '<em>$1</em>');
+        return `
+          <div class="associate-item" onclick="doSearch('${k}')">
+            <i class="fa fa-search"></i>
+            <span class="keyword">${highlighted}</span>
+            <i class="fa fa-arrow-right arrow"></i>
+          </div>
+        `;
+      }).join('');
+
+      section.classList.add('show');
+      document.getElementById('hotSection').style.display = 'none';
+      document.getElementById('historySection').style.display = 'none';
+    }
+
+    function hideAssociate() {
+      const section = document.getElementById('associateSection');
+      section.classList.remove('show');
+      document.getElementById('hotSection').style.display = '';
+      if (SearchHistory.get().length > 0) {
+        document.getElementById('historySection').style.display = '';
+      }
+    }
+
+    function doSearch(keyword) {
+      currentKeyword = keyword;
+      SearchHistory.add(keyword);
+
+      // 跳转到商品列表页
+      if (window.parent !== window) {
+        // 在 iframe 中，通过 postMessage 切换到商品列表页
+        window.parent.postMessage({ type: 'switchPage', page: 'productList', keyword: keyword }, '*');
+      } else {
+        // 独立页面，直接跳转
+        window.location.href = `商品列表页.html?keyword=${encodeURIComponent(keyword)}`;
+      }
+    }
+
+    function renderSearchResults() {
+      const grid = document.getElementById('resultGrid');
+      grid.innerHTML = searchResultProducts.map(p => renderProductCard(p)).join('');
+    }
+
+    function renderSimilarProducts() {
+      const container = document.getElementById('similarProducts');
+      const similar = PRODUCTS.slice(0, 8);
+      container.innerHTML = similar.map(p => `<span class="tag" onclick="doSearch('${p.tag || p.name}')">${p.tag || p.name}</span>`).join('');
+    }
+
+    function sortResult(type, el) {
+      currentSort = type;
+      document.querySelectorAll('.filter-bar-result .filter-tab').forEach(t => {
+        if (t !== el) t.classList.remove('active');
+      });
+      el.classList.add('active');
+
+      let sorted = [...searchResultProducts];
+      switch (type) {
+        case 'sales':
+          sorted.sort((a, b) => b.sales - a.sales);
+          break;
+        case 'price-asc':
+          sorted.sort((a, b) => a.price - b.price);
+          break;
+        case 'price-desc':
+          sorted.sort((a, b) => b.price - a.price);
+          break;
+        default:
+          sorted.sort((a, b) => b.sales - a.sales);
+      }
+
+      searchResultProducts = sorted;
+      renderSearchResults();
+    }
+
+    function openFilterPanel() {
+      document.getElementById('filterPanel').classList.add('show');
+    }
+
+    function closeFilterPanel() {
+      document.getElementById('filterPanel').classList.remove('show');
+    }
+
+    function toggleFilter(el, type) {
+      const siblings = el.parentElement.querySelectorAll('.filter-option');
+      siblings.forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+
+      if (type === 'cat') currentFilter.cat = el.dataset.filter;
+      if (type === 'price') currentFilter.price = el.dataset.filter;
+      if (type === 'discount') currentFilter.discount = el.classList.contains('active');
+      if (type === 'tag') currentFilter.tag = el.dataset.filter;
+    }
+
+    function resetFilter() {
+      currentFilter = { cat: 'all', price: 'all', discount: false, tag: '' };
+      document.querySelectorAll('.filter-option').forEach(opt => {
+        if (opt.dataset.filter === 'all') opt.classList.add('active');
+        else opt.classList.remove('active');
+      });
+    }
+
+    function applyFilter() {
+      closeFilterPanel();
+
+      const lower = currentKeyword.toLowerCase();
+      let results = PRODUCTS.filter(p =>
+        p.name.includes(currentKeyword) || p.category.includes(currentKeyword) || p.tag.includes(currentKeyword)
+      );
+
+      if (currentFilter.cat !== 'all') {
+        results = results.filter(p => p.category === currentFilter.cat);
+      }
+
+      if (currentFilter.price !== 'all') {
+        const [min, max] = currentFilter.price.split('-').map(Number);
+        results = results.filter(p => p.price >= min && p.price <= max);
+      }
+
+      if (currentFilter.discount) {
+        results = results.filter(p => p.discount && p.discount < 1);
+      }
+
+      searchResultProducts = results;
+      document.getElementById('resultCount').textContent = `找到 ${results.length} 个商品`;
+
+      if (results.length === 0) {
+        document.getElementById('noResult').style.display = '';
+        document.getElementById('resultGrid').style.display = 'none';
+      } else {
+        document.getElementById('noResult').style.display = 'none';
+        document.getElementById('resultGrid').style.display = '';
+      }
+
+      renderSearchResults();
+    }
+
+    function backFromResult() {
+      document.getElementById('resultSection').style.display = 'none';
+      document.getElementById('searchBody').style.display = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('hotSection').style.display = '';
+      renderHistory();
+      currentKeyword = '';
+      searchResultProducts = [];
+    }
+
+    function cancelSearch() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigateBack' }, '*');
+      } else {
+        backFromResult();
+      }
+    }
+
+    function handleSearchBtn() {
+      const keyword = document.getElementById('searchInput').value.trim();
+      if (keyword) {
+        doSearch(keyword);
+      } else {
+        cancelSearch();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initSearchPage);
+  </script>
+</body>
+</html>

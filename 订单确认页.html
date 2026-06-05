@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>订单确认 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f7ff;
+      --primary-dark: #096dd9;
+    }
+
+    body { margin: 0; background: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    /* ===== 顶部导航 ===== */
+    .oc-header {
+      background: #fff;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .oc-back {
+      position: absolute;
+      left: 14px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .oc-back:active { color: #333; }
+    .oc-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    /* ===== 页面内容 ===== */
+    .oc-body {
+      padding: 12px 14px 100px;
+    }
+
+    /* ===== 地址卡片 ===== */
+    .oc-address-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .oc-address-card:active { background: #fafafa; }
+    .oc-address-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .oc-address-info { flex: 1; }
+    .oc-address-user {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+    .oc-address-user span { font-size: 12px; color: #999; font-weight: 400; margin-left: 8px; }
+    .oc-address-detail {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .oc-address-edit {
+      color: #ccc;
+      font-size: 14px;
+      align-self: center;
+    }
+
+    /* ===== 自提卡片 ===== */
+    .oc-pickup-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .oc-pickup-card:active { background: #fafafa; }
+    .oc-pickup-icon {
+      width: 32px;
+      height: 32px;
+      background: #fff7e6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fa8c16;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .oc-pickup-info { flex: 1; }
+    .oc-pickup-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+    .oc-pickup-addr {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .oc-pickup-time {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    /* ===== 商品卡片 ===== */
+    .oc-shop-card {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .oc-shop-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .oc-shop-icon {
+      width: 20px;
+      height: 20px;
+      background: var(--primary-light);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 10px;
+    }
+    .oc-shop-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+    .oc-goods-list { padding: 10px 14px; }
+    .oc-goods-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .oc-goods-item:not(:last-child) { border-bottom: 1px dashed #f5f5f5; }
+    .oc-goods-img {
+      width: 52px;
+      height: 52px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #f5f5f5;
+      flex-shrink: 0;
+    }
+    .oc-goods-info { flex: 1; min-width: 0; }
+    .oc-goods-name {
+      font-size: 13px;
+      color: #1a1a1a;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .oc-goods-spec { font-size: 11px; color: #999; margin-top: 2px; }
+    .oc-goods-right { text-align: right; flex-shrink: 0; }
+    .oc-goods-price { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+    .oc-goods-qty { font-size: 11px; color: #999; margin-top: 2px; }
+
+    /* ===== 配送方式 ===== */
+    .oc-delivery-card {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .oc-delivery-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 12px 14px;
+    }
+    .oc-delivery-tab {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .oc-delivery-tab i { font-size: 13px; }
+    .oc-delivery-tab.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+      font-weight: 600;
+    }
+    .oc-delivery-body {
+      border-top: 1px solid #f0f0f0;
+      padding: 14px;
+    }
+
+    /* ===== 配送信息行（两列） ===== */
+    .oc-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 5px 0;
+      font-size: 13px;
+    }
+    .oc-info-row .label { color: #999; min-width: 60px; }
+    .oc-info-row .value { color: #333; text-align: right; flex: 1; margin-left: 12px; }
+    .oc-info-row.highlight .value { color: #fa8c16; font-weight: 600; }
+
+    /* ===== 收货地址行（配送到家） ===== */
+    .oc-addr-row {
+      display: flex;
+      gap: 6px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .oc-addr-row .field { color: #999; }
+    .oc-addr-row .val { color: #333; }
+    .oc-addr-edit-btn {
+      color: var(--primary);
+      font-size: 13px;
+      cursor: pointer;
+      margin-left: auto;
+      flex-shrink: 0;
+      font-weight: 600;
+    }
+
+    /* ===== 地址编辑弹窗 ===== */
+    .addr-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 500;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .addr-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .addr-dialog {
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .addr-overlay.show .addr-dialog {
+      transform: translateY(0);
+    }
+    .addr-handle {
+      width: 36px;
+      height: 4px;
+      background: #d9d9d9;
+      border-radius: 2px;
+      margin: 10px auto 0;
+      flex-shrink: 0;
+    }
+    .addr-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+    .addr-header-title { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+    .addr-header-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .addr-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .addr-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .addr-field-label {
+      font-size: 12px;
+      color: #999;
+    }
+    .addr-field input,
+    .addr-field textarea {
+      width: 100%;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #333;
+      font-family: inherit;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+    }
+    .addr-field input:focus,
+    .addr-field textarea:focus {
+      border-color: var(--primary);
+    }
+    .addr-footer {
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+    .addr-save-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      font-family: inherit;
+    }
+    .addr-save-btn:active { opacity: 0.85; }
+
+    /* ===== 备注 ===== */
+    .oc-remark-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .oc-remark-label { font-size: 14px; color: #1a1a1a; flex-shrink: 0; }
+    .oc-remark-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: #666;
+      background: transparent;
+      font-family: inherit;
+    }
+    .oc-remark-input::placeholder { color: #ccc; }
+
+    /* ===== 价格明细 ===== */
+    .oc-price-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .oc-price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      font-size: 13px;
+    }
+    .oc-price-row .label { color: #666; }
+    .oc-price-row .value { color: #1a1a1a; }
+    .oc-price-row.discount .value { color: #f5222d; }
+    .oc-price-row.total {
+      border-top: 1px solid #f5f5f5;
+      margin-top: 8px;
+      padding-top: 10px;
+    }
+    .oc-price-row.total .label { font-weight: 700; color: #1a1a1a; font-size: 14px; }
+    .oc-price-row.total .value { font-size: 16px; font-weight: 700; color: #f5222d; }
+
+    /* ===== 底部提交栏 ===== */
+    .oc-footer {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      border-top: 1px solid #f0f0f0;
+      padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+      display: flex;
+      align-items: center;
+      z-index: 100;
+      gap: 12px;
+    }
+    .oc-footer-total {
+      flex: 1;
+    }
+    .oc-footer-total-label { font-size: 12px; color: #999; }
+    .oc-footer-total-price { font-size: 18px; font-weight: 700; color: #f5222d; }
+    .oc-footer-btn {
+      padding: 12px 28px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-family: inherit;
+    }
+    .oc-footer-btn:active { opacity: 0.85; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 24px;
+      border-radius: 22px;
+      z-index: 500;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="oc-page">
+
+    <!-- 顶部导航 -->
+    <div class="oc-header">
+      <div class="oc-back" onclick="goBack()">
+        <i class="fa fa-chevron-left"></i>
+      </div>
+      <div class="oc-title">订单确认</div>
+    </div>
+
+    <!-- 页面内容 -->
+    <div class="oc-body">
+
+      <!-- 配送方式Tab -->
+      <div class="oc-delivery-card" id="ocDeliverySection">
+        <div class="oc-delivery-tabs">
+          <div class="oc-delivery-tab active" id="tab-pickup" onclick="switchDelivery('pickup')">
+            <i class="fa fa-store"></i>到店自提
+          </div>
+          <div class="oc-delivery-tab" id="tab-delivery" onclick="switchDelivery('delivery')">
+            <i class="fa fa-truck"></i>配送到家
+          </div>
+        </div>
+        <div class="oc-delivery-body" id="ocDeliveryBody"></div>
+      </div>
+
+      <!-- 商品卡片 -->
+      <div class="oc-shop-card">
+        <div class="oc-shop-header">
+          <div class="oc-shop-icon"><i class="fa fa-store"></i></div>
+          <div class="oc-shop-name">马尾食堂</div>
+        </div>
+        <div class="oc-goods-list" id="ocGoodsList"></div>
+      </div>
+
+      <!-- 备注 -->
+      <div class="oc-remark-card">
+        <span class="oc-remark-label">备注</span>
+        <input class="oc-remark-input" type="text" id="ocRemark" placeholder="选填，可备注口味、忌口等要求" maxlength="50">
+      </div>
+
+      <!-- 价格明细 -->
+      <div class="oc-price-card">
+        <div class="oc-price-row">
+          <span class="label">商品金额</span>
+          <span class="value" id="ocGoodsTotal">¥0.00</span>
+        </div>
+        <div class="oc-price-row">
+          <span class="label">配送费</span>
+          <span class="value" id="ocDeliveryFee">¥0.00</span>
+        </div>
+        <div class="oc-price-row discount">
+          <span class="label">优惠</span>
+          <span class="value">-¥0.00</span>
+        </div>
+        <div class="oc-price-row discount">
+          <span class="label">积分抵扣</span>
+          <span class="value">-¥0.00</span>
+        </div>
+        <div class="oc-price-row total">
+          <span class="label">合计</span>
+          <span class="value" id="ocFinalTotal">¥0.00</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 底部提交栏 -->
+    <div class="oc-footer">
+      <div class="oc-footer-total">
+        <div class="oc-footer-total-label">实付款</div>
+        <div class="oc-footer-total-price" id="ocFooterPrice">¥0.00</div>
+      </div>
+      <button class="oc-footer-btn" onclick="submitOrder()">提交订单</button>
+    </div>
+
+  </div>
+
+  <!-- 地址编辑弹窗 -->
+  <div class="addr-overlay" id="addrOverlay" onclick="closeAddrDialog(event)">
+    <div class="addr-dialog" onclick="event.stopPropagation()">
+      <div class="addr-handle"></div>
+      <div class="addr-header">
+        <div class="addr-header-title">修改收货地址</div>
+        <div class="addr-header-close" onclick="closeAddrDialog()"><i class="fa fa-times"></i></div>
+      </div>
+      <div class="addr-body">
+        <div class="addr-field">
+          <div class="addr-field-label">收货地址</div>
+          <textarea id="addrInput" rows="2" placeholder="请输入详细地址"></textarea>
+        </div>
+        <div class="addr-field">
+          <div class="addr-field-label">收货人</div>
+          <input id="nameInput" type="text" placeholder="请输入收货人姓名" maxlength="20">
+        </div>
+        <div class="addr-field">
+          <div class="addr-field-label">联系电话</div>
+          <input id="phoneInput" type="tel" placeholder="请输入联系电话" maxlength="11">
+        </div>
+      </div>
+      <div class="addr-footer">
+        <div class="addr-save-btn" onclick="saveAddrDialog()">保存</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== 订单确认页 ===== */
+
+    var deliveryMode = 'pickup'; // 'pickup' | 'delivery'
+
+    // 配送方式：'pickup'=自取, 'delivery'=配送
+    var defaultDelivery = 'pickup';
+
+    // 当前收货地址（可编辑）
+    var currentAddress = {
+      address: '福建省福州市马尾区罗星西路88号中国移动马尾分公司',
+      name: '张小明',
+      phone: '138****8888'
+    };
+
+    function init() {
+      // 接收URL参数或iframe消息
+      var params = new URLSearchParams(location.search);
+      var mode = params.get('mode');
+      if (mode === 'pickup' || mode === 'delivery') {
+        defaultDelivery = mode;
+      }
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'setDeliveryMode') {
+          defaultDelivery = e.data.mode;
+          applyDeliveryMode();
+        }
+      });
+      applyDeliveryMode();
+      renderGoods();
+      renderPrices();
+    }
+
+    function applyDeliveryMode() {
+      deliveryMode = defaultDelivery;
+      var tabPickup = document.getElementById('tab-pickup');
+      var tabDelivery = document.getElementById('tab-delivery');
+      tabPickup.classList.toggle('active', deliveryMode === 'pickup');
+      tabDelivery.classList.toggle('active', deliveryMode === 'delivery');
+      var body = document.getElementById('ocDeliveryBody');
+      if (deliveryMode === 'pickup') {
+        body.innerHTML = '' +
+          '<div class="oc-info-row"><span class="label">门店名称</span><span class="value">马尾食堂</span></div>' +
+          '<div class="oc-info-row"><span class="label">门店地址</span><span class="value">福建省福州市马尾区罗星西路88号中国移动马尾分公司食堂</span></div>' +
+          '<div class="oc-info-row highlight"><span class="label">领取日期</span><span class="value">次日</span></div>' +
+          '<div class="oc-info-row highlight"><span class="label">保留时间</span><span class="value">次日</span></div>' +
+          '<div class="oc-info-row"><span class="label">领取时间</span><span class="value">08:30-18:00</span></div>';
+      } else {
+        body.innerHTML = '' +
+          '<div class="oc-addr-row"><span class="field">收货地址：</span><span class="val" id="addrDisplay">' + currentAddress.address + '</span><span class="oc-addr-edit-btn" onclick="openAddrDialog()">修改</span></div>' +
+          '<div class="oc-addr-row"><span class="field">姓名：</span><span class="val" id="nameDisplay">' + currentAddress.name + '</span></div>' +
+          '<div class="oc-addr-row"><span class="field">电话：</span><span class="val" id="phoneDisplay">' + currentAddress.phone + '</span></div>';
+      }
+      renderPrices();
+    }
+
+    function switchDelivery(mode) {
+      deliveryMode = mode;
+      document.getElementById('tab-pickup').classList.toggle('active', mode === 'pickup');
+      document.getElementById('tab-delivery').classList.toggle('active', mode === 'delivery');
+      var body = document.getElementById('ocDeliveryBody');
+      if (mode === 'pickup') {
+        body.innerHTML = '' +
+          '<div class="oc-info-row"><span class="label">门店名称</span><span class="value">马尾食堂</span></div>' +
+          '<div class="oc-info-row"><span class="label">门店地址</span><span class="value">福建省福州市马尾区罗星西路88号中国移动马尾分公司食堂</span></div>' +
+          '<div class="oc-info-row highlight"><span class="label">领取日期</span><span class="value">次日</span></div>' +
+          '<div class="oc-info-row highlight"><span class="label">保留时间</span><span class="value">次日</span></div>' +
+          '<div class="oc-info-row"><span class="label">领取时间</span><span class="value">08:30-18:00</span></div>';
+      } else {
+        body.innerHTML = '' +
+          '<div class="oc-addr-row"><span class="field">收货地址：</span><span class="val" id="addrDisplay">' + currentAddress.address + '</span><span class="oc-addr-edit-btn" onclick="openAddrDialog()">修改</span></div>' +
+          '<div class="oc-addr-row"><span class="field">姓名：</span><span class="val" id="nameDisplay">' + currentAddress.name + '</span></div>' +
+          '<div class="oc-addr-row"><span class="field">电话：</span><span class="val" id="phoneDisplay">' + currentAddress.phone + '</span></div>';
+      }
+      renderPrices();
+    }
+
+    function renderGoods() {
+      var checkedItems = Cart.get().filter(function(i) { return i.checked; });
+      if (checkedItems.length === 0) {
+        checkedItems = Cart.get().slice(0, 1);
+      }
+      var html = checkedItems.map(function(item) {
+        return '<div class="oc-goods-item">' +
+          '<img class="oc-goods-img" src="' + item.img + '" alt="' + item.name + '" onerror="this.style.display=\'none\'">' +
+          '<div class="oc-goods-info">' +
+          '<div class="oc-goods-name">' + item.name + '</div>' +
+          '<div class="oc-goods-spec">' + (item.spec || '默认规格') + '</div>' +
+          '</div>' +
+          '<div class="oc-goods-right">' +
+          '<div class="oc-goods-price">¥' + item.price.toFixed(2) + '</div>' +
+          '<div class="oc-goods-qty">x' + (item.qty || 1) + '</div>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+      document.getElementById('ocGoodsList').innerHTML = html;
+    }
+
+    function renderPrices() {
+      var checkedItems = Cart.get().filter(function(i) { return i.checked; });
+      if (checkedItems.length === 0) {
+        checkedItems = Cart.get().slice(0, 1);
+      }
+      var goodsTotal = checkedItems.reduce(function(s, i) { return s + i.price * (i.qty || 1); }, 0);
+      var deliveryFee = deliveryMode === 'pickup' ? 0 : 5;
+      var final = goodsTotal + deliveryFee;
+
+      document.getElementById('ocGoodsTotal').textContent = '¥' + goodsTotal.toFixed(2);
+      document.getElementById('ocDeliveryFee').textContent = deliveryFee === 0 ? '免运费' : '¥' + deliveryFee.toFixed(2);
+      document.getElementById('ocFinalTotal').textContent = '¥' + final.toFixed(2);
+      document.getElementById('ocFooterPrice').textContent = '¥' + final.toFixed(2);
+    }
+
+    function openAddrDialog() {
+      document.getElementById('addrInput').value = currentAddress.address;
+      document.getElementById('nameInput').value = currentAddress.name;
+      document.getElementById('phoneInput').value = currentAddress.phone;
+      document.getElementById('addrOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddrDialog(e) {
+      if (e && e.target !== document.getElementById('addrOverlay')) return;
+      document.getElementById('addrOverlay').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    function saveAddrDialog() {
+      var addr = document.getElementById('addrInput').value.trim();
+      var name = document.getElementById('nameInput').value.trim();
+      var phone = document.getElementById('phoneInput').value.trim();
+      if (!addr) { toast('请输入收货地址'); return; }
+      if (!name) { toast('请输入收货人'); return; }
+      if (!phone) { toast('请输入联系电话'); return; }
+      currentAddress.address = addr;
+      currentAddress.name = name;
+      currentAddress.phone = phone;
+      // 重新渲染配送到家内容（不切换tab）
+      var body = document.getElementById('ocDeliveryBody');
+      if (deliveryMode === 'delivery') {
+        body.innerHTML = '' +
+          '<div class="oc-addr-row"><span class="field">收货地址：</span><span class="val" id="addrDisplay">' + currentAddress.address + '</span><span class="oc-addr-edit-btn" onclick="openAddrDialog()">修改</span></div>' +
+          '<div class="oc-addr-row"><span class="field">姓名：</span><span class="val" id="nameDisplay">' + currentAddress.name + '</span></div>' +
+          '<div class="oc-addr-row"><span class="field">电话：</span><span class="val" id="phoneDisplay">' + currentAddress.phone + '</span></div>';
+      }
+      closeAddrDialog();
+      toast('地址已保存');
+    }
+
+    function submitOrder() {
+      toast('订单提交成功');
+    }
+
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'cart' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    function toast(msg) {
+      var old = document.querySelector('.toast');
+      if (old) old.remove();
+      var el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2000);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

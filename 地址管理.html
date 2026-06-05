@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>地址管理 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f4ff;
+      --primary-dark: #096dd9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding-bottom: 20px;
+    }
+
+    /* ===== 顶部导航栏 ===== */
+    .address-header {
+      background: #fff;
+      padding: 14px 14px 12px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid #eee;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .header-title {
+      flex: 1;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .action-btn {
+      font-size: 13px;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .add-btn {
+      font-size: 13px;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* ===== 搜索框 ===== */
+    .search-bar {
+      display: none;
+      align-items: center;
+      background: #f5f5f5;
+      border-radius: 18px;
+      padding: 8px 14px;
+      gap: 8px;
+      margin: 10px 14px;
+    }
+    .search-bar.active { display: flex; }
+    .search-bar input {
+      flex: 1;
+      font-size: 14px;
+      background: transparent;
+      color: #333;
+      border: none;
+      outline: none;
+    }
+    .search-bar input::placeholder { color: #999; }
+
+    /* ===== 地址列表 ===== */
+    .address-list {
+      padding: 10px 14px;
+    }
+
+    .address-card {
+      background: #fff;
+      padding: 14px 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+    }
+
+    .address-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .checkbox-wrap {
+      display: none;
+      align-items: center;
+      padding-top: 2px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .checkbox-wrap.show { display: flex; }
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ddd;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .checkbox.checked {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .checkbox.checked::after {
+      content: '';
+      width: 5px;
+      height: 9px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+
+    .address-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .address-main {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .address-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .default-tag {
+      display: inline-block;
+      padding: 1px 6px;
+      font-size: 10px;
+      color: var(--primary);
+      background: var(--primary-light);
+      border-radius: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .address-phone {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .address-detail {
+      font-size: 13px;
+      color: #999;
+      line-height: 1.4;
+    }
+
+    .address-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #f5f5f5;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #666;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #f5f5f5;
+    }
+    .action-item:active {
+      opacity: 0.7;
+    }
+    .action-item i {
+      font-size: 12px;
+    }
+    .action-item.default-action {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    /* ===== 空状态 ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      gap: 12px;
+    }
+    .empty-state i {
+      font-size: 56px;
+      color: #ddd;
+    }
+    .empty-state p {
+      color: #999;
+      font-size: 14px;
+    }
+    .empty-add-btn {
+      margin-top: 16px;
+      padding: 10px 28px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* ===== 底部批量操作栏 ===== */
+    .batch-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+      box-shadow: 0 -1px 10px rgba(0,0,0,0.08);
+      z-index: 100;
+    }
+    .batch-bar.show { display: block; }
+
+    .batch-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .batch-count { font-size: 13px; color: #666; }
+    .batch-select-all { font-size: 13px; color: var(--primary); }
+
+    .batch-btns {
+      display: flex;
+      gap: 10px;
+    }
+    .batch-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+    }
+    .batch-cancel {
+      background: #f5f5f5;
+      color: #666;
+    }
+    .batch-delete {
+      background: #f5222d;
+      color: #fff;
+    }
+    .batch-delete:disabled {
+      background: #ddd;
+    }
+
+    /* ===== 新增/编辑地址弹窗 ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 500;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.show .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid #eee;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 16px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+    .form-item {
+      flex: 1;
+      margin-bottom: 14px;
+    }
+    .form-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #333;
+      background: #f8f8f8;
+      border: none;
+      border-radius: 6px;
+      outline: none;
+    }
+    .form-input:focus {
+      background: #fff;
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #333;
+      background: #f8f8f8;
+      border: none;
+      border-radius: 6px;
+      resize: none;
+      min-height: 70px;
+      outline: none;
+    }
+    .form-textarea:focus {
+      background: #fff;
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .form-switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: #f8f8f8;
+      border-radius: 6px;
+    }
+    .switch-text {
+      font-size: 14px;
+      color: #333;
+    }
+    .switch-control {
+      position: relative;
+      width: 42px;
+      height: 24px;
+    }
+    .switch-control input { opacity: 0; width: 0; height: 0; }
+    .switch-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #ccc;
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+    .switch-slider::before {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 2px;
+      bottom: 2px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .switch-control input:checked + .switch-slider { background: var(--primary); }
+    .switch-control input:checked + .switch-slider::before { transform: translateX(18px); }
+
+    .modal-footer {
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 22px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .submit-btn:active {
+      background: var(--primary-dark);
+    }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 13px;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s;
+    }
+    .toast.show {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    /* ===== 删除确认弹窗 ===== */
+    .confirm-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .confirm-modal.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .confirm-box {
+      width: 270px;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.3s;
+    }
+    .confirm-modal.show .confirm-box { transform: scale(1); }
+    .confirm-content {
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .confirm-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+    .confirm-desc {
+      font-size: 13px;
+      color: #999;
+      margin-top: 6px;
+    }
+    .confirm-btns {
+      display: flex;
+      border-top: 1px solid #eee;
+    }
+    .confirm-btn {
+      flex: 1;
+      padding: 13px;
+      font-size: 15px;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      background: #fff;
+    }
+    .confirm-btn:first-child { color: #666; border-right: 1px solid #eee; }
+    .confirm-btn:last-child { color: var(--primary); font-weight: 500; }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <div class="address-header">
+    <div class="back-btn" onclick="goBack()">
+      <i class="fa fa-chevron-left"></i>
+    </div>
+    <div class="header-title" id="headerTitle">地址管理</div>
+    <div class="header-actions" id="headerActions">
+      <span class="action-btn" onclick="toggleSearch()">
+        <i class="fa fa-search"></i>
+      </span>
+      <span class="action-btn" id="manageBtn" onclick="toggleManageMode()">管理</span>
+      <span class="add-btn" onclick="openAddModal()">
+        <i class="fa fa-plus"></i>
+      </span>
+    </div>
+  </div>
+
+  <!-- 搜索框 -->
+  <div class="search-bar" id="searchBar">
+    <i class="fa fa-search" style="color: #999; font-size: 14px;"></i>
+    <input type="text" id="searchInput" placeholder="搜索收货人、电话、地址" oninput="doSearch(this.value)">
+    <i class="fa fa-times" style="color: #999; font-size: 12px; cursor: pointer;" onclick="clearSearch()"></i>
+  </div>
+
+  <!-- 地址列表 -->
+  <div class="address-list" id="addressList"></div>
+
+  <!-- 空状态 -->
+  <div class="empty-state" id="emptyState" style="display: none;">
+    <i class="fa fa-map-marker-alt"></i>
+    <p>暂无收货地址</p>
+    <div class="empty-add-btn" onclick="openAddModal()">添加地址</div>
+  </div>
+
+  <!-- 底部批量操作栏 -->
+  <div class="batch-bar" id="batchBar">
+    <div class="batch-top">
+      <span class="batch-count">已选 <span id="selectedCount">0</span> 项</span>
+      <span class="batch-select-all" onclick="toggleSelectAll()">全选</span>
+    </div>
+    <div class="batch-btns">
+      <button class="batch-btn batch-cancel" onclick="toggleManageMode()">取消</button>
+      <button class="batch-btn batch-delete" id="batchDeleteBtn" onclick="confirmBatchDelete()" disabled>删除</button>
+    </div>
+  </div>
+
+  <!-- 新增/编辑地址弹窗 -->
+  <div class="modal-overlay" id="addressModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">新增地址</div>
+        <div class="modal-close" onclick="closeModal()">
+          <i class="fa fa-times"></i>
+        </div>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId">
+
+        <div class="form-row">
+          <div class="form-item">
+            <label class="form-label">收货人</label>
+            <input type="text" class="form-input" id="contactName" placeholder="姓名" maxlength="20">
+          </div>
+          <div class="form-item">
+            <label class="form-label">联系电话</label>
+            <input type="tel" class="form-input" id="contactPhone" placeholder="手机号" maxlength="11">
+          </div>
+        </div>
+
+        <div class="form-item">
+          <label class="form-label">所在地区</label>
+          <input type="text" class="form-input" id="region" placeholder="点击选择省市区" readonly onclick="selectRegion()">
+        </div>
+
+        <div class="form-item">
+          <label class="form-label">详细地址</label>
+          <textarea class="form-textarea" id="detailAddress" placeholder="街道、门牌号等" maxlength="200"></textarea>
+        </div>
+
+        <div class="form-item">
+          <div class="form-switch">
+            <span class="switch-text">设为默认地址</span>
+            <label class="switch-control">
+              <input type="checkbox" id="isDefault">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="submit-btn" onclick="submitAddress()">保存地址</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div class="confirm-modal" id="deleteConfirmModal">
+    <div class="confirm-box">
+      <div class="confirm-content">
+        <div class="confirm-title">确认删除</div>
+        <div class="confirm-desc">删除后无法恢复</div>
+      </div>
+      <div class="confirm-btns">
+        <button class="confirm-btn" onclick="closeDeleteConfirm()">取消</button>
+        <button class="confirm-btn" id="confirmDeleteBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== 地址管理页面 ===== */
+
+    const STORAGE_KEY = 'canteen_addresses';
+
+    const DEFAULT_ADDRESSES = [
+      {
+        id: 'default_1',
+        name: '张小明',
+        phone: '13812345678',
+        province: '福建省',
+        city: '福州市',
+        district: '马尾区',
+        street: '罗星街道',
+        detail: '青洲路77号马尾区人民政府大楼1205室',
+        isDefault: true,
+        createTime: Date.now() - 86400000 * 5
+      },
+      {
+        id: 'default_2',
+        name: '李婷婷',
+        phone: '13987654321',
+        province: '福建省',
+        city: '福州市',
+        district: '鼓楼区',
+        street: '温泉街道',
+        detail: '五四路128号恒力城2号楼1801',
+        isDefault: false,
+        createTime: Date.now() - 86400000 * 3
+      },
+      {
+        id: 'default_3',
+        name: '王建国',
+        phone: '13723456789',
+        province: '福建省',
+        city: '福州市',
+        district: '台江区',
+        street: '茶亭街道',
+        detail: '工业路193号福州大学怡山校区学生宿舍12栋302',
+        isDefault: false,
+        createTime: Date.now() - 86400000 * 1
+      }
+    ];
+
+    let addresses = [];
+    let isManageMode = false;
+    let selectedIds = [];
+    let isSearchMode = false;
+    let currentEditId = null;
+    let deleteType = 'single';
+    let pendingDeleteIds = [];
+
+    function init() {
+      loadAddresses();
+      renderAddressList();
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'pageLoaded', page: 'address' }, '*');
+      }
+    }
+
+    function loadAddresses() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        addresses = JSON.parse(stored);
+      } else {
+        addresses = [...DEFAULT_ADDRESSES];
+        saveAddresses();
+      }
+    }
+
+    function saveAddresses() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(addresses));
+    }
+
+    function renderAddressList() {
+      const listEl = document.getElementById('addressList');
+      const emptyEl = document.getElementById('emptyState');
+
+      const sorted = [...addresses].sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return b.createTime - a.createTime;
+      });
+
+      if (sorted.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'flex';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+
+      listEl.innerHTML = sorted.map(addr => `
+        <div class="address-card" data-id="${addr.id}">
+          <div class="address-top">
+            <div class="checkbox-wrap ${isManageMode ? 'show' : ''}" onclick="toggleSelect('${addr.id}')">
+              <div class="checkbox ${selectedIds.includes(addr.id) ? 'checked' : ''}"></div>
+            </div>
+            <div class="address-content">
+              <div class="address-main">
+                <div>
+                  <span class="address-name">${addr.name}</span>
+                  ${addr.isDefault ? '<span class="default-tag">默认</span>' : ''}
+                </div>
+                <span class="address-phone">${formatPhone(addr.phone)}</span>
+              </div>
+              <div class="address-detail">${addr.province} ${addr.city} ${addr.district} ${addr.street || ''} ${addr.detail}</div>
+            </div>
+          </div>
+          <div class="address-actions">
+            <div class="action-item" onclick="openEditModal('${addr.id}')">
+              <i class="fa fa-edit"></i> 编辑
+            </div>
+            ${!addr.isDefault ? `
+              <div class="action-item" onclick="setDefault('${addr.id}')">
+                <i class="fa fa-check-circle"></i> 设为默认
+              </div>
+              <div class="action-item" onclick="confirmDelete('${addr.id}')">
+                <i class="fa fa-trash-alt"></i> 删除
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatPhone(phone) {
+      if (!phone || phone.length !== 11) return phone;
+      return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+    }
+
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'profile' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    function toggleSearch() {
+      isSearchMode = !isSearchMode;
+      const searchBar = document.getElementById('searchBar');
+      const headerTitle = document.getElementById('headerTitle');
+      const headerActions = document.getElementById('headerActions');
+
+      if (isSearchMode) {
+        searchBar.classList.add('active');
+        headerTitle.style.visibility = 'hidden';
+        headerActions.style.visibility = 'hidden';
+        document.getElementById('searchInput').focus();
+      } else {
+        searchBar.classList.remove('active');
+        headerTitle.style.visibility = 'visible';
+        headerActions.style.visibility = 'visible';
+        clearSearch();
+      }
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      renderAddressList();
+    }
+
+    function doSearch(keyword) {
+      const listEl = document.getElementById('addressList');
+
+      if (!keyword.trim()) {
+        renderAddressList();
+        return;
+      }
+
+      const kw = keyword.toLowerCase();
+      const filtered = addresses.filter(addr => {
+        return addr.name.toLowerCase().includes(kw) ||
+               addr.phone.includes(kw) ||
+               addr.province.toLowerCase().includes(kw) ||
+               addr.city.toLowerCase().includes(kw) ||
+               addr.district.toLowerCase().includes(kw) ||
+               (addr.street && addr.street.toLowerCase().includes(kw)) ||
+               addr.detail.toLowerCase().includes(kw);
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-state">
+            <i class="fa fa-search"></i>
+            <p>未找到相关地址</p>
+          </div>
+        `;
+        return;
+      }
+
+      const sorted = filtered.sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return b.createTime - a.createTime;
+      });
+
+      listEl.innerHTML = sorted.map(addr => `
+        <div class="address-card" data-id="${addr.id}">
+          <div class="address-top">
+            <div class="checkbox-wrap ${isManageMode ? 'show' : ''}" onclick="toggleSelect('${addr.id}')">
+              <div class="checkbox ${selectedIds.includes(addr.id) ? 'checked' : ''}"></div>
+            </div>
+            <div class="address-content">
+              <div class="address-main">
+                <div>
+                  <span class="address-name">${addr.name}</span>
+                  ${addr.isDefault ? '<span class="default-tag">默认</span>' : ''}
+                </div>
+                <span class="address-phone">${formatPhone(addr.phone)}</span>
+              </div>
+              <div class="address-detail">${addr.province} ${addr.city} ${addr.district} ${addr.street || ''} ${addr.detail}</div>
+            </div>
+          </div>
+          <div class="address-actions">
+            <div class="action-item" onclick="openEditModal('${addr.id}')">
+              <i class="fa fa-edit"></i> 编辑
+            </div>
+            ${!addr.isDefault ? `
+              <div class="action-item" onclick="setDefault('${addr.id}')">
+                <i class="fa fa-check-circle"></i> 设为默认
+              </div>
+              <div class="action-item" onclick="confirmDelete('${addr.id}')">
+                <i class="fa fa-trash-alt"></i> 删除
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleManageMode() {
+      isManageMode = !isManageMode;
+      selectedIds = [];
+
+      const manageBtn = document.getElementById('manageBtn');
+      const batchBar = document.getElementById('batchBar');
+      const headerTitle = document.getElementById('headerTitle');
+
+      if (isManageMode) {
+        manageBtn.textContent = '完成';
+        batchBar.classList.add('show');
+        headerTitle.textContent = '批量管理';
+
+        if (isSearchMode) {
+          toggleSearch();
+        }
+      } else {
+        manageBtn.textContent = '管理';
+        batchBar.classList.remove('show');
+        headerTitle.textContent = '地址管理';
+      }
+
+      renderAddressList();
+    }
+
+    function toggleSelect(id) {
+      const idx = selectedIds.indexOf(id);
+      if (idx > -1) {
+        selectedIds.splice(idx, 1);
+      } else {
+        selectedIds.push(id);
+      }
+      updateBatchUI();
+      renderAddressList();
+    }
+
+    function toggleSelectAll() {
+      if (selectedIds.length === addresses.length) {
+        selectedIds = [];
+      } else {
+        selectedIds = addresses.map(a => a.id);
+      }
+      updateBatchUI();
+      renderAddressList();
+    }
+
+    function updateBatchUI() {
+      document.getElementById('selectedCount').textContent = selectedIds.length;
+      document.getElementById('batchDeleteBtn').disabled = selectedIds.length === 0;
+    }
+
+    function setDefault(id) {
+      addresses.forEach(a => a.isDefault = false);
+      const addr = addresses.find(a => a.id === id);
+      if (addr) {
+        addr.isDefault = true;
+        saveAddresses();
+        renderAddressList();
+        showToast('已设为默认地址');
+      }
+    }
+
+    function confirmDelete(id) {
+      deleteType = 'single';
+      pendingDeleteIds = [id];
+      document.getElementById('deleteConfirmModal').classList.add('show');
+    }
+
+    function confirmBatchDelete() {
+      if (selectedIds.length === 0) return;
+      deleteType = 'batch';
+      pendingDeleteIds = [...selectedIds];
+      document.getElementById('deleteConfirmModal').classList.add('show');
+    }
+
+    function closeDeleteConfirm() {
+      document.getElementById('deleteConfirmModal').classList.remove('show');
+      pendingDeleteIds = [];
+    }
+
+    function doDelete() {
+      pendingDeleteIds.forEach(id => {
+        const idx = addresses.findIndex(a => a.id === id);
+        if (idx > -1) {
+          addresses.splice(idx, 1);
+        }
+      });
+
+      if (!addresses.some(a => a.isDefault) && addresses.length > 0) {
+        addresses[0].isDefault = true;
+      }
+
+      saveAddresses();
+      closeDeleteConfirm();
+
+      if (isManageMode) {
+        selectedIds = [];
+        updateBatchUI();
+      }
+
+      renderAddressList();
+      showToast('删除成功');
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', doDelete);
+
+    function openAddModal() {
+      currentEditId = null;
+      document.getElementById('modalTitle').textContent = '新增地址';
+      document.getElementById('editId').value = '';
+      document.getElementById('contactName').value = '';
+      document.getElementById('contactPhone').value = '';
+      document.getElementById('region').value = '';
+      document.getElementById('detailAddress').value = '';
+      document.getElementById('isDefault').checked = addresses.length === 0;
+      document.getElementById('addressModal').classList.add('show');
+    }
+
+    function openEditModal(id) {
+      const addr = addresses.find(a => a.id === id);
+      if (!addr) return;
+
+      currentEditId = id;
+      document.getElementById('modalTitle').textContent = '编辑地址';
+      document.getElementById('editId').value = id;
+      document.getElementById('contactName').value = addr.name;
+      document.getElementById('contactPhone').value = addr.phone;
+      document.getElementById('region').value = `${addr.province} ${addr.city} ${addr.district}`;
+      document.getElementById('detailAddress').value = addr.detail;
+      document.getElementById('isDefault').checked = addr.isDefault;
+      document.getElementById('addressModal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('addressModal').classList.remove('show');
+    }
+
+    function selectRegion() {
+      const regions = [
+        { province: '福建省', city: '福州市', district: '马尾区' },
+        { province: '福建省', city: '福州市', district: '鼓楼区' },
+        { province: '福建省', city: '福州市', district: '台江区' },
+        { province: '福建省', city: '福州市', district: '晋安区' },
+        { province: '福建省', city: '厦门市', district: '思明区' },
+        { province: '福建省', city: '厦门市', district: '湖里区' }
+      ];
+      const random = regions[Math.floor(Math.random() * regions.length)];
+      document.getElementById('region').value = `${random.province} ${random.city} ${random.district}`;
+    }
+
+    function submitAddress() {
+      const name = document.getElementById('contactName').value.trim();
+      const phone = document.getElementById('contactPhone').value.trim();
+      const region = document.getElementById('region').value.trim();
+      const detail = document.getElementById('detailAddress').value.trim();
+      const isDefault = document.getElementById('isDefault').checked;
+
+      if (!name) {
+        showToast('请输入收货人');
+        return;
+      }
+      if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+        showToast('请输入正确的手机号');
+        return;
+      }
+      if (!region) {
+        showToast('请选择所在地区');
+        return;
+      }
+      if (!detail) {
+        showToast('请输入详细地址');
+        return;
+      }
+
+      const parts = region.split(' ');
+      const province = parts[0] || '';
+      const city = parts[1] || '';
+      const district = parts[2] || '';
+
+      if (currentEditId) {
+        const idx = addresses.findIndex(a => a.id === currentEditId);
+        if (idx > -1) {
+          if (isDefault && !addresses[idx].isDefault) {
+            addresses.forEach(a => a.isDefault = false);
+          }
+          addresses[idx] = {
+            ...addresses[idx],
+            name,
+            phone,
+            province,
+            city,
+            district,
+            detail,
+            isDefault
+          };
+        }
+        showToast('地址已更新');
+      } else {
+        if (isDefault) {
+          addresses.forEach(a => a.isDefault = false);
+        }
+        addresses.push({
+          id: 'addr_' + Date.now(),
+          name,
+          phone,
+          province,
+          city,
+          district,
+          detail,
+          isDefault,
+          createTime: Date.now()
+        });
+        showToast('地址已添加');
+      }
+
+      saveAddresses();
+      closeModal();
+      renderAddressList();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    document.getElementById('addressModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>消息中心 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f7ff;
+      --primary-dark: #096dd9;
+      --primary-bg: rgba(24, 144, 255, 0.06);
+    }
+
+    .notice-page {
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding-bottom: 20px;
+    }
+
+    /* ===== 顶部导航 ===== */
+    .notice-header {
+      background: #fff;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .notice-header h2 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a1a;
+      flex: 1;
+      text-align: center;
+    }
+    .notice-header-back {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .notice-header-back:active { background: #f0f0f0; }
+    .header-action-btn {
+      font-size: 13px;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 4px 0;
+      background: none;
+      border: none;
+      font-family: inherit;
+      transition: opacity 0.2s;
+      min-width: 50px;
+      text-align: right;
+    }
+    .header-action-btn:active { opacity: 0.6; }
+
+    /* ===== 消息卡片列表 ===== */
+    .notice-list {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* 消息卡片 */
+    .notice-card {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.15s;
+      border: 1px solid transparent;
+    }
+    .notice-card:active {
+      transform: scale(0.99);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .notice-card.unread {
+      border-color: rgba(24, 144, 255, 0.25);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 14px 10px;
+    }
+
+    /* 类型图标 */
+    .card-type-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .card-type-icon.order   { background: #1890FF; }
+    .card-type-icon.stock   { background: #52C41A; }
+    .card-type-icon.asset   { background: #FA8C16; }
+    .card-type-icon.system  { background: #722ED1; }
+
+    .card-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .card-type-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.3;
+    }
+    .card-time {
+      font-size: 11px;
+      color: #bbb;
+      margin-top: 2px;
+    }
+
+    /* 未读小红点 */
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f5222d;
+      flex-shrink: 0;
+    }
+    .notice-card.unread .card-dot { display: block; }
+    .card-dot { display: none; }
+
+    .card-body {
+      padding: 0 14px 14px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px 12px;
+      border-top: 1px solid #f5f5f5;
+    }
+    .card-footer.no-link {
+      justify-content: flex-start;
+    }
+    .card-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .card-tag.order-tag  { background: rgba(24,144,255,0.1);  color: #1890FF; }
+    .card-tag.stock-tag  { background: rgba(82,196,26,0.1);   color: #52C41A; }
+    .card-tag.asset-tag  { background: rgba(250,140,22,0.1);  color: #FA8C16; }
+    .card-tag.system-tag { background: rgba(114,46,209,0.1);  color: #722ED1; }
+    .card-link {
+      font-size: 12px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .card-link i { font-size: 11px; }
+
+    /* ===== 空状态 ===== */
+    .notice-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 20px;
+      gap: 12px;
+    }
+    .notice-empty-icon {
+      width: 90px;
+      height: 90px;
+      background: #f0f0f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .notice-empty-icon i { font-size: 40px; color: #ccc; }
+    .notice-empty h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #666;
+    }
+    .notice-empty p {
+      font-size: 13px;
+      color: #999;
+    }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 22px;
+      border-radius: 22px;
+      z-index: 500;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="notice-page" id="noticePage">
+    <!-- 顶部导航 -->
+    <div class="notice-header">
+      <div class="notice-header-back" onclick="goBack()">
+        <i class="fa fa-chevron-left"></i>
+      </div>
+      <h2>消息中心</h2>
+      <button class="header-action-btn" id="markAllBtn" onclick="markAllRead()">全部已读</button>
+    </div>
+
+    <!-- 消息卡片列表 -->
+    <div class="notice-list" id="noticeList"></div>
+
+    <!-- 空状态 -->
+    <div class="notice-empty" id="noticeEmpty" style="display:none;">
+      <div class="notice-empty-icon">
+        <i class="fa fa-bell-slash"></i>
+      </div>
+      <h3>暂无消息</h3>
+      <p>您目前没有待处理的消息</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== 消息中心 ===== */
+    let messages = [];
+
+    /*
+     * 消息类型说明：
+     * - order  : 订单消息（订单已发货、订单已完成、订单已退款）
+     * - stock  : 到货提醒（关注商品到货）
+     * - asset  : 我的资产（余额变动提醒）
+     * - system : 系统消息（发布消息）
+     */
+    const MOCK_MESSAGES = [
+      /* ===== 订单消息 ===== */
+      {
+        id: 1,
+        type: 'order',
+        typeLabel: '订单消息',
+        title: '您的订单已发货',
+        desc: '订单号：20250620001，商家已发货，请注意查收。物流单号：773416434533766',
+        time: '刚刚',
+        timeFull: '2026-05-21 14:00',
+        unread: true,
+        tag: '订单已发货',
+        icon: '订',
+        iconClass: 'order',
+      },
+      {
+        id: 2,
+        type: 'order',
+        typeLabel: '订单消息',
+        title: '您的订单已完成',
+        desc: '订单号：20250620002，订单已完成，期待再次光临！',
+        time: '30分钟前',
+        timeFull: '2026-05-21 13:30',
+        unread: true,
+        tag: '订单已完成',
+        icon: '订',
+        iconClass: 'order',
+      },
+      {
+        id: 3,
+        type: 'order',
+        typeLabel: '订单消息',
+        title: '您的订单已退款',
+        desc: '订单号：20250618002，退款金额¥22.00已原路返回，请注意查收，预计1-3个工作日到账。',
+        time: '2小时前',
+        timeFull: '2026-05-21 12:00',
+        unread: false,
+        tag: '订单已退款',
+        icon: '订',
+        iconClass: 'order',
+      },
+      {
+        id: 4,
+        type: 'order',
+        typeLabel: '订单消息',
+        title: '您的订单已退款',
+        desc: '订单号：20250619001，退款金额¥68.00已原路返回，请注意查收，预计1-3个工作日到账。',
+        time: '昨天',
+        timeFull: '2026-05-20 10:00',
+        unread: false,
+        tag: '订单已退款',
+        icon: '订',
+        iconClass: 'order',
+      },
+
+      /* ===== 到货提醒 ===== */
+      {
+        id: 5,
+        type: 'stock',
+        typeLabel: '到货提醒',
+        title: '您关注的商品已到货',
+        desc: '您关注的「蛋黄酥礼盒」已到货，欢迎下单购买~ 库存充足，先到先得。',
+        time: '10分钟前',
+        timeFull: '2026-05-21 13:50',
+        unread: true,
+        tag: '关注商品到货',
+        icon: '到',
+        iconClass: 'stock',
+      },
+      {
+        id: 6,
+        type: 'stock',
+        typeLabel: '到货提醒',
+        title: '您关注的商品已到货',
+        desc: '您关注的「虎皮蛋糕卷」已到货，欢迎下单购买~',
+        time: '昨天',
+        timeFull: '2026-05-20 08:30',
+        unread: false,
+        tag: '关注商品到货',
+        icon: '到',
+        iconClass: 'stock',
+      },
+
+      /* ===== 我的资产 ===== */
+      {
+        id: 7,
+        type: 'asset',
+        typeLabel: '我的资产',
+        title: '余额变动提醒',
+        desc: '您的账户余额变动+¥52.80，当前余额¥86.50。',
+        time: '3小时前',
+        timeFull: '2026-05-21 11:00',
+        unread: false,
+        tag: '余额变动提醒',
+        icon: '资',
+        iconClass: 'asset',
+      },
+
+      /* ===== 系统消息 ===== */
+      {
+        id: 8,
+        type: 'system',
+        typeLabel: '系统消息',
+        title: '马尾食堂App v2.3.0 更新公告',
+        desc: '本次更新：新增消息中心、订单追踪、到货提醒等功能；优化首页加载速度；修复若干已知问题。',
+        time: '今天 09:00',
+        timeFull: '2026-05-21 09:00',
+        unread: false,
+        tag: '发布消息',
+        icon: '系',
+        iconClass: 'system',
+      },
+      {
+        id: 9,
+        type: 'system',
+        typeLabel: '系统消息',
+        title: '端午节假期营业时间调整通知',
+        desc: '端午节期间（6月1日-6月3日），各食堂营业时间调整为 9:00-14:00，6月4日起恢复正常。',
+        time: '3天前',
+        timeFull: '2026-05-18 10:00',
+        unread: false,
+        tag: '发布消息',
+        icon: '系',
+        iconClass: 'system',
+      },
+    ];
+
+    /* ===== 初始化 ===== */
+    function initNoticePage() {
+      messages = MOCK_MESSAGES;
+      renderMessages();
+    }
+
+    /* ===== 渲染 ===== */
+    function renderMessages() {
+      const list = document.getElementById('noticeList');
+      const empty = document.getElementById('noticeEmpty');
+
+      if (messages.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = '';
+        return;
+      }
+
+      empty.style.display = 'none';
+
+      const sorted = [...messages].sort((a, b) => {
+        return new Date(b.timeFull) - new Date(a.timeFull);
+      });
+
+      list.innerHTML = sorted.map(msg => {
+        const noLink = msg.type === 'asset';
+        return `
+          <div class="notice-card ${msg.unread ? 'unread' : ''}"
+               data-id="${msg.id}"
+               onclick="openCard(${msg.id})">
+            <div class="card-header">
+              <div class="card-type-icon ${msg.iconClass}">${msg.icon}</div>
+              <div class="card-meta">
+                <div class="card-type-label">${msg.typeLabel}</div>
+                <div class="card-time">${msg.time}</div>
+              </div>
+              <div class="card-dot"></div>
+            </div>
+            <div class="card-body">
+              <div class="card-title">${msg.title}</div>
+              <div class="card-desc">${msg.desc}</div>
+            </div>
+            <div class="card-footer ${noLink ? 'no-link' : ''}">
+              <span class="card-tag ${msg.iconClass}-tag">${msg.tag}</span>
+              ${noLink ? '' : '<span class="card-link">查看详情 <i class="fa fa-chevron-right"></i></span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ===== 全部已读 ===== */
+    function markAllRead() {
+      const hasUnread = messages.some(m => m.unread);
+      if (!hasUnread) {
+        toast('暂无未读消息');
+        return;
+      }
+      messages.forEach(m => { m.unread = false; });
+      renderMessages();
+      toast('已全部已读');
+    }
+
+    /* ===== 点击卡片 ===== */
+    function openCard(id) {
+      const msg = messages.find(m => m.id === id);
+      if (!msg) return;
+
+      if (msg.unread) {
+        msg.unread = false;
+        renderMessages();
+      }
+
+      if (msg.type === 'order') {
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'switchPage', page: 'orders' }, '*');
+        } else {
+          toast('正在跳转订单管理...');
+          setTimeout(() => { window.location.href = '订单管理.html'; }, 600);
+        }
+      } else if (msg.type === 'stock') {
+        toast('商品已到货，快去看看吧~');
+      } else if (msg.type === 'asset') {
+        toast('余额变动已展示');
+      } else if (msg.type === 'system') {
+        toast('系统公告已展示');
+      }
+    }
+
+    /* ===== 返回 ===== */
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'home' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    /* ===== Toast ===== */
+    function toast(msg) {
+      const old = document.querySelector('.toast');
+      if (old) old.remove();
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+
+    /* ===== Init ===== */
+    window.addEventListener('DOMContentLoaded', initNoticePage);
+  </script>
+</body>
+</html>

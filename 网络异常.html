@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>网络异常 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ===== 网络异常页专属样式 ===== */
+    :root {
+      --primary: #1890FF;
+      --primary-light: #E6F4FF;
+      --primary-dark: #096DD9;
+      --error: #FF4D4F;
+      --text-primary: #333;
+      --text-secondary: #666;
+      --text-tertiary: #999;
+      --bg-color: #F5F5F5;
+      --border-color: #E8E8E8;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: var(--bg-color);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== 状态栏 ===== */
+    .status-bar {
+      height: 44px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .status-bar-time {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .status-bar-icons {
+      position: absolute;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .status-bar-icons i {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    /* ===== 导航栏 ===== */
+    .nav-bar {
+      height: 44px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+    }
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--primary);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px;
+      margin-left: -4px;
+    }
+    .nav-back i { font-size: 18px; }
+    .nav-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .nav-more {
+      position: absolute;
+      right: 16px;
+      font-size: 18px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    /* ===== 网络异常内容 ===== */
+    .error-container {
+      min-height: calc(100vh - 88px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: #fff;
+    }
+
+    .error-icon-wrap {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #FFF1F0 0%, #FFEBE6 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .error-icon-wrap::before {
+      content: '';
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border: 2px dashed rgba(255, 77, 79, 0.3);
+      border-radius: 50%;
+      animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .error-icon {
+      font-size: 56px;
+      color: var(--error);
+    }
+
+    .error-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .error-desc {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      text-align: center;
+      line-height: 1.5;
+      margin-bottom: 28px;
+      max-width: 260px;
+    }
+
+    .error-btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .error-btn {
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .error-btn:active {
+      transform: scale(0.96);
+    }
+
+    .error-btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .error-btn-primary:active {
+      background: var(--primary-dark);
+    }
+
+    .error-btn-secondary {
+      background: var(--bg-color);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .error-btn-secondary:active {
+      background: #E8E8E8;
+    }
+
+    /* ===== 动画 ===== */
+    .error-icon-wrap .error-icon {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    /* ===== 底部占位 ===== */
+    .bottom-fill {
+      height: 34px;
+      background: #fff;
+    }
+
+    /* ===== 模拟信号图标 ===== */
+    .signal-icon {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+    }
+
+    .signal-bar {
+      width: 3px;
+      background: var(--text-primary);
+      border-radius: 1px;
+    }
+
+    .signal-bar:nth-child(1) { height: 4px; }
+    .signal-bar:nth-child(2) { height: 7px; }
+    .signal-bar:nth-child(3) { height: 10px; }
+    .signal-bar:nth-child(4) { height: 13px; }
+    .signal-bar.inactive { background: #ccc; }
+
+    .battery-icon {
+      display: flex;
+      align-items: center;
+      gap: 1px;
+    }
+
+    .battery-body {
+      width: 20px;
+      height: 10px;
+      border: 1px solid var(--text-primary);
+      border-radius: 2px;
+      padding: 1px;
+    }
+
+    .battery-level {
+      height: 100%;
+      background: var(--text-primary);
+      border-radius: 1px;
+      width: 80%;
+    }
+
+    .battery-tip {
+      width: 2px;
+      height: 5px;
+      background: var(--text-primary);
+      border-radius: 0 1px 1px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <span class="status-bar-time" id="statusTime">9:41</span>
+    <div class="status-bar-icons">
+      <div class="signal-icon">
+        <div class="signal-bar"></div>
+        <div class="signal-bar"></div>
+        <div class="signal-bar"></div>
+        <div class="signal-bar inactive"></div>
+      </div>
+      <i class="fa fa-wifi" style="margin-left: 2px;"></i>
+      <div class="battery-icon">
+        <div class="battery-body">
+          <div class="battery-level"></div>
+        </div>
+        <div class="battery-tip"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导航栏 -->
+  <div class="nav-bar">
+    <div class="nav-back" onclick="goBack()">
+      <i class="fa fa-chevron-left"></i>
+      <span>返回</span>
+    </div>
+    <div class="nav-title">网络异常</div>
+    <div class="nav-more">
+      <i class="fa fa-ellipsis-h"></i>
+    </div>
+  </div>
+
+  <!-- 异常内容 -->
+  <div class="error-container">
+    <div class="error-icon-wrap">
+      <i class="fa fa-wifi error-icon"></i>
+    </div>
+    <div class="error-title">网络异常</div>
+    <div class="error-desc">请检查您的网络设置，点击下方按钮重新加载</div>
+    <div class="error-btn-group">
+      <button class="error-btn error-btn-secondary" onclick="goBack()">
+        <i class="fa fa-arrow-left"></i>
+        返回
+      </button>
+      <button class="error-btn error-btn-primary" onclick="retryLoad()">
+        <i class="fa fa-redo"></i>
+        重新加载
+      </button>
+    </div>
+  </div>
+
+  <!-- 底部占位 -->
+  <div class="bottom-fill"></div>
+
+  <script>
+    // 更新时间显示
+    function updateTime() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      document.getElementById('statusTime').textContent = `${hours}:${minutes}`;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // 返回上一页
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigateBack' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    // 重新加载
+    function retryLoad() {
+      const btn = document.querySelector('.error-btn-primary');
+      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 加载中...';
+      btn.disabled = true;
+
+      // 模拟网络请求
+      setTimeout(() => {
+        // 假设重试成功，返回上一页或刷新
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'navigateBack' }, '*');
+        } else {
+          showToast('网络已恢复', 'success');
+          btn.innerHTML = '<i class="fa fa-check"></i> 已恢复';
+          setTimeout(() => {
+            history.back();
+          }, 500);
+        }
+      }, 1500);
+    }
+
+    // Toast 提示
+    function showToast(message, type = 'default') {
+      const id = 'toast-' + Date.now();
+      const toast = document.createElement('div');
+      toast.id = id;
+      toast.className = 'toast' + (type === 'success' ? ' toast-success' : type === 'error' ? ' toast-error' : '');
+      toast.textContent = message;
+      toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.75);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;';
+      document.body.appendChild(toast);
+      requestAnimationFrame(() => toast.style.opacity = '1');
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

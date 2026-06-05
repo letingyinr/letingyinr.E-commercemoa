@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>评价中心 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f4ff;
+      --success: #52c41a;
+      --warning: #faad14;
+      --error: #f5222d;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --text-tertiary: #999999;
+      --border-color: #f0f0f0;
+      --bg-color: #f5f5f5;
+    }
+
+    body { margin: 0; background: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    /* ===== 顶部导航 ===== */
+    .rc-header {
+      background: #fff;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .rc-back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-size: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .rc-back:active { opacity: 0.6; }
+    .rc-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* ===== 状态标签 ===== */
+    .rc-tabs {
+      background: #fff;
+      padding: 12px 16px;
+      display: flex;
+      gap: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .rc-tab {
+      font-size: 15px;
+      color: var(--text-tertiary);
+      padding-bottom: 10px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .rc-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .rc-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 1px;
+    }
+    .rc-tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      background: var(--error);
+      color: #fff;
+      font-size: 11px;
+      border-radius: 9px;
+      margin-left: 4px;
+      padding: 0 5px;
+    }
+    .rc-tab.active .rc-tab-count {
+      background: var(--primary);
+    }
+
+    /* ===== 待评价列表 ===== */
+    .rc-pending-list {
+      padding: 12px;
+    }
+    .rc-order-card {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .rc-order-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .rc-order-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .rc-order-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--primary-light);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 12px;
+    }
+    .rc-order-time {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+    .rc-order-status {
+      font-size: 13px;
+      color: var(--error);
+      font-weight: 500;
+    }
+    .rc-products {
+      padding: 12px 14px;
+    }
+    .rc-product-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .rc-product-item:last-child {
+      border-bottom: none;
+    }
+    .rc-product-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f5f5f5;
+      flex-shrink: 0;
+    }
+    .rc-product-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .rc-product-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .rc-product-spec {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
+    }
+    .rc-product-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .rc-product-price {
+      font-size: 14px;
+      color: var(--error);
+      font-weight: 600;
+    }
+    .rc-review-btn {
+      padding: 6px 16px;
+      background: linear-gradient(135deg, #1890FF, #40a9ff);
+      color: #fff;
+      font-size: 13px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .rc-review-btn:active {
+      transform: scale(0.95);
+      opacity: 0.9;
+    }
+    .rc-order-footer {
+      padding: 10px 14px;
+      background: #fafafa;
+      display: flex;
+      justify-content: flex-end;
+      border-top: 1px solid var(--border-color);
+    }
+
+    /* ===== 已评价列表 ===== */
+    .rc-reviewed-list {
+      padding: 12px;
+    }
+    .rc-reviewed-card {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .rc-reviewed-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .rc-reviewed-products {
+      padding: 12px 14px;
+    }
+    .rc-reviewed-product {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .rc-reviewed-product:last-child {
+      border-bottom: none;
+    }
+    .rc-reviewed-img {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #f5f5f5;
+      flex-shrink: 0;
+    }
+    .rc-reviewed-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .rc-reviewed-rating {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .rc-reviewed-stars {
+      color: #ffc107;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    .rc-reviewed-time {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+    .rc-reviewed-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .rc-reviewed-images {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .rc-reviewed-thumb {
+      width: 50px;
+      height: 50px;
+      border-radius: 4px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    .rc-reviewed-footer {
+      padding: 10px 14px;
+      background: #fafafa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+    }
+    .rc-add-review-btn {
+      padding: 6px 16px;
+      background: #fff;
+      color: var(--primary);
+      font-size: 13px;
+      border: 1px solid var(--primary);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .rc-add-review-btn:active {
+      background: var(--primary-light);
+    }
+
+    /* ===== 追评弹窗 ===== */
+    .rc-add-review-panel {
+      display: none;
+      padding: 14px;
+      background: #fff;
+      border-top: 1px solid var(--border-color);
+    }
+    .rc-add-review-panel.show {
+      display: block;
+    }
+    .rc-add-review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .rc-add-review-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .rc-add-review-close {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .rc-add-review-textarea {
+      width: 100%;
+      min-height: 80px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--text-primary);
+      resize: none;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .rc-add-review-textarea:focus {
+      border-color: var(--primary);
+    }
+    .rc-add-review-textarea::placeholder {
+      color: var(--text-tertiary);
+    }
+    .rc-add-review-images {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .rc-add-review-image {
+      width: 60px;
+      height: 60px;
+      border-radius: 6px;
+      object-fit: cover;
+      position: relative;
+    }
+    .rc-add-review-image-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 18px;
+      height: 18px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .rc-add-review-add {
+      width: 60px;
+      height: 60px;
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--text-tertiary);
+      cursor: pointer;
+    }
+    .rc-add-review-add i {
+      font-size: 20px;
+    }
+    .rc-add-review-add span {
+      font-size: 10px;
+    }
+    .rc-add-review-submit {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #1890FF, #40a9ff);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .rc-add-review-submit:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    /* ===== 为你推荐 ===== */
+    .rc-recommend {
+      background: #fff;
+      margin-top: 8px;
+      padding: 14px;
+    }
+    .rc-recommend-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .rc-recommend-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .rc-recommend-icon {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 10px;
+    }
+    .rc-recommend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .rc-recommend-card {
+      background: #f9f9f9;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .rc-recommend-card:active {
+      transform: scale(0.97);
+    }
+    .rc-recommend-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      background: #eee;
+    }
+    .rc-recommend-info {
+      padding: 8px 10px;
+    }
+    .rc-recommend-name {
+      font-size: 13px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 36px;
+      line-height: 1.4;
+    }
+    .rc-recommend-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+    .rc-recommend-price {
+      font-size: 15px;
+      color: var(--error);
+      font-weight: 700;
+    }
+    .rc-recommend-add {
+      width: 26px;
+      height: 26px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* ===== 底部占位 ===== */
+    .rc-bottom-fill {
+      height: 20px;
+    }
+
+    /* ===== 空状态 ===== */
+    .rc-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-tertiary);
+    }
+    .rc-empty i {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
+      color: #d9d9d9;
+    }
+    .rc-empty p {
+      font-size: 14px;
+      margin: 0;
+    }
+    .rc-empty-btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 14px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    /* ===== Toast ===== */
+    .rc-toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 22px;
+      border-radius: 22px;
+      z-index: 700;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* ===== 图片预览 ===== */
+    .rc-img-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 600;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .rc-img-overlay.show { display: flex; }
+    .rc-img-overlay img {
+      max-width: 95vw;
+      max-height: 90vh;
+      border-radius: var(--radius-sm);
+      object-fit: contain;
+    }
+    .rc-img-overlay-close {
+      position: absolute;
+      top: max(14px, env(safe-area-inset-top));
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="rc-page">
+
+    <!-- 顶部导航 -->
+    <div class="rc-header">
+      <div class="rc-back" onclick="goBack()">
+        <i class="fa fa-chevron-left"></i>
+      </div>
+      <div class="rc-title">评价中心</div>
+    </div>
+
+    <!-- 状态标签 -->
+    <div class="rc-tabs">
+      <div class="rc-tab active" id="rcTabPending" onclick="switchTab('pending')">
+        待评价<span class="rc-tab-count" id="rcPendingCount">0</span>
+      </div>
+      <div class="rc-tab" id="rcTabReviewed" onclick="switchTab('reviewed')">
+        已评价<span class="rc-tab-count" id="rcReviewedCount">0</span>
+      </div>
+    </div>
+
+    <!-- 待评价列表 -->
+    <div class="rc-pending-list" id="rcPendingList"></div>
+
+    <!-- 已评价列表 -->
+    <div class="rc-reviewed-list" id="rcReviewedList" style="display:none;"></div>
+
+    <!-- 为你推荐 -->
+    <div class="rc-recommend" id="rcRecommend"></div>
+
+    <!-- 底部占位 -->
+    <div class="rc-bottom-fill"></div>
+
+  </div>
+
+  <!-- 图片预览 -->
+  <div class="rc-img-overlay" id="rcImgOverlay" onclick="closeImgPreview()">
+    <div class="rc-img-overlay-close" onclick="closeImgPreview()">
+      <i class="fa fa-times"></i>
+    </div>
+    <img id="rcPreviewImg" src="" alt="">
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== 评价中心 ===== */
+
+    let currentTab = 'pending';
+    let pendingOrders = [];
+    let reviewedOrders = [];
+    let recommendProducts = [];
+    let expandedAddReview = null; // 正在展开追评的商品ID
+
+    // 模拟数据 - 待评价订单
+    const mockPendingOrders = [
+      {
+        id: 1001,
+        time: '2026-05-23 12:30',
+        products: [
+          {
+            id: 101,
+            name: '红烧狮子头套餐',
+            spec: '大份',
+            price: 28.8,
+            img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+            reviewed: false
+          },
+          {
+            id: 102,
+            name: '酸菜鱼盖饭',
+            spec: '微辣',
+            price: 22.0,
+            img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop',
+            reviewed: false
+          }
+        ]
+      },
+      {
+        id: 1002,
+        time: '2026-05-22 18:45',
+        products: [
+          {
+            id: 103,
+            name: '香菇鸡肉盖饭',
+            spec: '中份',
+            price: 18.0,
+            img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop',
+            reviewed: false
+          }
+        ]
+      },
+      {
+        id: 1003,
+        time: '2026-05-21 08:15',
+        products: [
+          {
+            id: 104,
+            name: '鲜肉包子',
+            spec: '3个装',
+            price: 6.0,
+            img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=200&h=200&fit=crop',
+            reviewed: false
+          },
+          {
+            id: 105,
+            name: '豆浆',
+            spec: '大杯',
+            price: 4.0,
+            img: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=200&h=200&fit=crop',
+            reviewed: false
+          },
+          {
+            id: 106,
+            name: '茶叶蛋',
+            spec: '单个',
+            price: 2.0,
+            img: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?w=200&h=200&fit=crop',
+            reviewed: false
+          }
+        ]
+      }
+    ];
+
+    // 模拟数据 - 已评价订单
+    const mockReviewedOrders = [
+      {
+        id: 999,
+        time: '2026-05-20 12:00',
+        products: [
+          {
+            id: 201,
+            name: '卤牛肉拼盘',
+            spec: '中份',
+            price: 38.0,
+            img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+            stars: 5,
+            text: '味道很好，卤得很入味，分量也足，下次还会回购的！',
+            images: [
+              'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=400&fit=crop'
+            ],
+            hasAddReview: false
+          }
+        ]
+      },
+      {
+        id: 998,
+        time: '2026-05-18 19:30',
+        products: [
+          {
+            id: 202,
+            name: '宫保鸡丁盖饭',
+            spec: '微辣',
+            price: 20.0,
+            img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop',
+            stars: 4,
+            text: '鸡肉很嫩，花生很脆，就是有点咸了。',
+            images: [],
+            hasAddReview: true,
+            addReviewText: '追评：店家很客气，给我多加了肉，赞一个！',
+            addReviewImages: []
+          }
+        ]
+      }
+    ];
+
+    // 推荐商品
+    const mockRecommend = [
+      {
+        id: 301,
+        name: '红烧排骨套餐',
+        price: 32.0,
+        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=300&h=300&fit=crop'
+      },
+      {
+        id: 302,
+        name: '清蒸鲈鱼',
+        price: 45.0,
+        img: 'https://images.unsplash.com/photo-1587131782738-de30ea91a542?w=300&h=300&fit=crop'
+      },
+      {
+        id: 303,
+        name: '麻婆豆腐',
+        price: 18.0,
+        img: 'https://images.unsplash.com/photo-1582576163090-09d3b6f8a969?w=300&h=300&fit=crop'
+      },
+      {
+        id: 304,
+        name: '番茄炒蛋套餐',
+        price: 16.0,
+        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=300&h=300&fit=crop'
+      }
+    ];
+
+    // ---------- 初始化 ----------
+    function init() {
+      pendingOrders = mockPendingOrders;
+      reviewedOrders = mockReviewedOrders;
+      recommendProducts = mockRecommend;
+
+      renderPendingList();
+      renderReviewedList();
+      renderRecommend();
+      updateCounts();
+    }
+
+    // ---------- 更新计数 ----------
+    function updateCounts() {
+      const pendingCount = pendingOrders.reduce((sum, o) => sum + o.products.filter(p => !p.reviewed).length, 0);
+      const reviewedCount = reviewedOrders.length;
+      document.getElementById('rcPendingCount').textContent = pendingCount;
+      document.getElementById('rcReviewedCount').textContent = reviewedCount;
+    }
+
+    // ---------- 切换标签 ----------
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      document.querySelectorAll('.rc-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tab === 'pending' ? 'rcTabPending' : 'rcTabReviewed').classList.add('active');
+      
+      document.getElementById('rcPendingList').style.display = tab === 'pending' ? 'block' : 'none';
+      document.getElementById('rcReviewedList').style.display = tab === 'reviewed' ? 'block' : 'none';
+    }
+
+    // ---------- 渲染待评价列表 ----------
+    function renderPendingList() {
+      const container = document.getElementById('rcPendingList');
+      
+      if (pendingOrders.length === 0) {
+        container.innerHTML = `
+          <div class="rc-empty">
+            <i class="fa fa-comments-o"></i>
+            <p>暂无待评价订单</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = pendingOrders.map(order => `
+        <div class="rc-order-card">
+          <div class="rc-order-header">
+            <div class="rc-order-info">
+              <div class="rc-order-icon">
+                <i class="fa fa-utensils"></i>
+              </div>
+              <span class="rc-order-time">${order.time}</span>
+            </div>
+            <span class="rc-order-status">待评价</span>
+          </div>
+          <div class="rc-products">
+            ${order.products.map(p => `
+              <div class="rc-product-item">
+                <img class="rc-product-img" src="${p.img}" alt="${p.name}" onerror="this.style.display='none'">
+                <div class="rc-product-info">
+                  <div class="rc-product-name">${p.name}</div>
+                  <div class="rc-product-spec">${p.spec}</div>
+                  <div class="rc-product-bottom">
+                    <span class="rc-product-price">¥${p.price.toFixed(1)}</span>
+                    ${!p.reviewed ? `<div class="rc-review-btn" onclick="goToReview(${order.id}, ${p.id})">去评价</div>` : '<span style="color:var(--text-tertiary);font-size:12px;">已评价</span>'}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ---------- 渲染已评价列表 ----------
+    function renderReviewedList() {
+      const container = document.getElementById('rcReviewedList');
+      
+      if (reviewedOrders.length === 0) {
+        container.innerHTML = `
+          <div class="rc-empty">
+            <i class="fa fa-star-o"></i>
+            <p>暂无已评价订单</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = reviewedOrders.map(order => `
+        <div class="rc-reviewed-card">
+          <div class="rc-reviewed-header">
+            <div class="rc-order-info">
+              <div class="rc-order-icon" style="background:#f6ffed;color:var(--success);">
+                <i class="fa fa-check"></i>
+              </div>
+              <span class="rc-order-time">${order.time}</span>
+            </div>
+          </div>
+          <div class="rc-reviewed-products">
+            ${order.products.map(p => `
+              <div class="rc-reviewed-product">
+                <img class="rc-reviewed-img" src="${p.img}" alt="${p.name}" onerror="this.style.display='none'">
+                <div class="rc-reviewed-content">
+                  <div class="rc-reviewed-rating">
+                    <div class="rc-reviewed-stars">
+                      ${generateStars(p.stars)}
+                    </div>
+                    <span class="rc-reviewed-time">${p.stars === 5 ? '非常满意' : p.stars === 4 ? '满意' : p.stars === 3 ? '一般' : '差'}</span>
+                  </div>
+                  <div class="rc-reviewed-text">${p.text}</div>
+                  ${p.images && p.images.length > 0 ? `
+                    <div class="rc-reviewed-images">
+                      ${p.images.map(img => `<img class="rc-reviewed-thumb" src="${img}" alt="评价图片" onclick="previewImage('${img}')" onerror="this.style.display='none'">`).join('')}
+                    </div>
+                  ` : ''}
+                  ${p.hasAddReview ? `
+                    <div style="margin-top:8px;padding:8px 10px;background:#fafafa;border-radius:6px;font-size:12px;color:var(--text-secondary);">
+                      <div style="color:var(--primary);margin-bottom:4px;">追评</div>
+                      ${p.addReviewText}
+                      ${p.addReviewImages && p.addReviewImages.length > 0 ? `
+                        <div class="rc-reviewed-images" style="margin-top:6px;">
+                          ${p.addReviewImages.map(img => `<img class="rc-reviewed-thumb" src="${img}" alt="追评图片" onclick="previewImage('${img}')" onerror="this.style.display='none'">`).join('')}
+                        </div>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+              <div class="rc-reviewed-footer">
+                <span style="font-size:12px;color:var(--text-tertiary);">订单号: ${order.id}</span>
+                <div class="rc-add-review-btn" onclick="toggleAddReview(${order.id}, ${p.id})">
+                  <i class="fa fa-edit"></i>
+                  ${p.hasAddReview ? '查看追评' : '写追评'}
+                </div>
+              </div>
+              <div class="rc-add-review-panel ${expandedAddReview === p.id ? 'show' : ''}" id="addReviewPanel_${p.id}">
+                <div class="rc-add-review-header">
+                  <span class="rc-add-review-title">追加评价</span>
+                  <div class="rc-add-review-close" onclick="toggleAddReview(${order.id}, ${p.id})">
+                    <i class="fa fa-times"></i>
+                  </div>
+                </div>
+                <textarea class="rc-add-review-textarea" id="addReviewText_${p.id}" placeholder="对评价进行补充，更客观，更全面～" maxlength="500"></textarea>
+                <div class="rc-add-review-images" id="addReviewImages_${p.id}">
+                  <div class="rc-add-review-add" onclick="addReviewImage(${p.id})">
+                    <i class="fa fa-plus"></i>
+                    <span>添加图片</span>
+                  </div>
+                </div>
+                <div class="rc-add-review-submit" onclick="submitAddReview(${p.id})">发布追评</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ---------- 生成星星 ----------
+    function generateStars(count) {
+      let html = '';
+      for (let i = 1; i <= 5; i++) {
+        html += i <= count ? '<i class="fa fa-star"></i>' : '<i class="fa fa-star" style="color:#d9d9d9;"></i>';
+      }
+      return html;
+    }
+
+    // ---------- 展开/收起追评 ----------
+    let addReviewImages = {}; // { productId: [imageUrls] }
+
+    function toggleAddReview(orderId, productId) {
+      if (expandedAddReview === productId) {
+        expandedAddReview = null;
+      } else {
+        expandedAddReview = productId;
+        if (!addReviewImages[productId]) {
+          addReviewImages[productId] = [];
+        }
+      }
+      renderReviewedList();
+    }
+
+    // ---------- 添加追评图片 ----------
+    function addReviewImage(productId) {
+      const sampleImages = [
+        'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop',
+        'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=200&fit=crop',
+        'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=200&h=200&fit=crop'
+      ];
+      
+      if (addReviewImages[productId].length >= 9) {
+        showToast('最多上传9张图片');
+        return;
+      }
+      
+      const randomImg = sampleImages[Math.floor(Math.random() * sampleImages.length)];
+      addReviewImages[productId].push(randomImg);
+      renderAddReviewImages(productId);
+    }
+
+    // ---------- 渲染追评图片 ----------
+    function renderAddReviewImages(productId) {
+      const container = document.getElementById(`addReviewImages_${productId}`);
+      if (!container) return;
+      
+      let html = addReviewImages[productId].map((src, idx) => `
+        <div class="rc-add-review-image" style="position:relative;">
+          <img src="${src}" alt="追评图片" style="width:60px;height:60px;border-radius:6px;object-fit:cover;">
+          <div class="rc-add-review-image-remove" onclick="removeAddReviewImage(${productId}, ${idx})">
+            <i class="fa fa-times"></i>
+          </div>
+        </div>
+      `).join('');
+      
+      if (addReviewImages[productId].length < 9) {
+        html += `
+          <div class="rc-add-review-add" onclick="addReviewImage(${productId})">
+            <i class="fa fa-plus"></i>
+            <span>添加图片</span>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // ---------- 删除追评图片 ----------
+    function removeAddReviewImage(productId, idx) {
+      addReviewImages[productId].splice(idx, 1);
+      renderAddReviewImages(productId);
+    }
+
+    // ---------- 提交追评 ----------
+    function submitAddReview(productId) {
+      const text = document.getElementById(`addReviewText_${productId}`).value;
+      if (!text.trim()) {
+        showToast('请输入追评内容');
+        return;
+      }
+      
+      // 模拟提交
+      showToast('追评发布成功', 'success');
+      
+      // 更新数据
+      reviewedOrders.forEach(order => {
+        const product = order.products.find(p => p.id === productId);
+        if (product) {
+          product.hasAddReview = true;
+          product.addReviewText = text;
+          product.addReviewImages = addReviewImages[productId] || [];
+        }
+      });
+      
+      expandedAddReview = null;
+      renderReviewedList();
+    }
+
+    // ---------- 跳转写评价 ----------
+    function goToReview(orderId, productId) {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'reviewWrite', orderId: orderId, productId: productId }, '*');
+      } else {
+        location.href = '用户评价页.html?orderId=' + orderId + '&productId=' + productId;
+      }
+    }
+
+    // ---------- 渲染推荐 ----------
+    function renderRecommend() {
+      const container = document.getElementById('rcRecommend');
+      container.innerHTML = `
+        <div class="rc-recommend-header">
+          <div class="rc-recommend-icon">
+            <i class="fa fa-fire"></i>
+          </div>
+          <span class="rc-recommend-title">为你推荐</span>
+        </div>
+        <div class="rc-recommend-grid">
+          ${recommendProducts.map(p => `
+            <div class="rc-recommend-card" onclick="goToProduct(${p.id})">
+              <img class="rc-recommend-img" src="${p.img}" alt="${p.name}" onerror="this.style.display='none'">
+              <div class="rc-recommend-info">
+                <div class="rc-recommend-name">${p.name}</div>
+                <div class="rc-recommend-bottom">
+                  <span class="rc-recommend-price">¥${p.price.toFixed(1)}</span>
+                  <div class="rc-recommend-add">
+                    <i class="fa fa-plus"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // ---------- 跳转商品详情 ----------
+    function goToProduct(productId) {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigate', id: productId }, '*');
+      } else {
+        location.href = '商品详情页.html?id=' + productId;
+      }
+    }
+
+    // ---------- 图片预览 ----------
+    function previewImage(src) {
+      document.getElementById('rcPreviewImg').src = src;
+      document.getElementById('rcImgOverlay').classList.add('show');
+    }
+
+    function closeImgPreview() {
+      document.getElementById('rcImgOverlay').classList.remove('show');
+    }
+
+    // ---------- 导航 ----------
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'navigateBack' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    // ---------- Toast ----------
+    function showToast(msg, type) {
+      var old = document.querySelector('.rc-toast');
+      if (old) old.remove();
+      var el = document.createElement('div');
+      el.className = 'rc-toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2000);
+    }
+
+    // ---------- 接收消息 ----------
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'refresh') {
+        init();
+      }
+    });
+
+    // ---------- Init ----------
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

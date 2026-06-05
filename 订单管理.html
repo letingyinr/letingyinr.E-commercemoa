@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>订单管理 - 马尾食堂</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      --primary: #1890FF;
+      --primary-light: #e6f7ff;
+      --primary-dark: #096dd9;
+    }
+
+    .orders-page {
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding-bottom: 70px;
+    }
+
+    /* ===== 顶部导航 ===== */
+    .orders-header {
+      background: #fff;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .orders-header h2 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .header-back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 16px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      transition: color 0.2s;
+    }
+    .header-back:active { color: var(--primary); }
+
+    /* ===== 订单状态 Tab ===== */
+    .orders-tabs {
+      background: #fff;
+      display: flex;
+      border-bottom: 1px solid #f0f0f0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .orders-tabs::-webkit-scrollbar { display: none; }
+    .orders-tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px 0;
+      font-size: 13px;
+      color: #1a1a1a;
+      cursor: pointer;
+      position: relative;
+      background: none;
+      border: none;
+      font-family: inherit;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+    .orders-tab::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 2px 2px 0 0;
+      transition: width 0.2s ease;
+    }
+    .orders-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .orders-tab.active::after { width: 30px; }
+    .orders-tab:active { opacity: 0.7; }
+
+    /* ===== 订单列表内容 ===== */
+    .orders-content {
+      padding: 12px 14px;
+    }
+
+    /* ===== 订单卡片 ===== */
+    .order-card {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .order-shop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .shop-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .shop-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 12px;
+    }
+    .shop-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .order-status {
+      font-size: 13px;
+      color: var(--primary);
+      font-weight: 500;
+    }
+    .order-status.red { color: #f5222d; }
+    .order-status.orange { color: #fa8c16; }
+    .order-status.green { color: #52c41a; }
+    .order-status.gray { color: #999; }
+
+    /* 商品列表 */
+    .order-goods {
+      padding: 10px 14px;
+    }
+    .goods-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .goods-item:not(:last-child) { border-bottom: 1px dashed #f5f5f5; }
+    .goods-img {
+      width: 56px;
+      height: 56px;
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #f5f5f5;
+    }
+    .goods-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .goods-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .goods-name {
+      font-size: 13px;
+      color: #1a1a1a;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .goods-spec {
+      font-size: 11px;
+      color: #999;
+      margin-top: 3px;
+    }
+    .goods-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .goods-price {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .goods-price small { font-size: 11px; font-weight: 400; }
+    .goods-qty {
+      font-size: 11px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    /* 订单金额 & 操作 */
+    .order-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-top: 1px solid #f5f5f5;
+    }
+    .order-total {
+      font-size: 13px;
+      color: #666;
+    }
+    .order-total strong {
+      font-size: 15px;
+      color: #1a1a1a;
+      font-weight: 700;
+    }
+    .order-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .order-btn {
+      padding: 6px 16px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: #fff;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .order-btn:active { transform: scale(0.95); opacity: 0.8; }
+    .btn-outline {
+      border: 1px solid #d9d9d9;
+      color: #666;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-red {
+      background: #fff1f0;
+      border: 1px solid #ffccc7;
+      color: #f5222d;
+    }
+    .btn-orange {
+      background: #fff7e6;
+      border: 1px solid #ffd591;
+      color: #fa8c16;
+    }
+
+    /* ===== 更多菜单 ===== */
+    .more-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .more-btn {
+      font-size: 12px;
+      color: #999;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      transition: color 0.2s;
+    }
+    .more-btn:active { color: #666; }
+    .more-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+    .more-dropdown {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      z-index: 200;
+      min-width: 120px;
+      overflow: hidden;
+      display: none;
+    }
+    .more-dropdown.show { display: block; }
+    .more-dropdown-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #1a1a1a;
+      cursor: pointer;
+      border-bottom: 1px solid #f5f5f5;
+      transition: background 0.15s;
+    }
+    .more-dropdown-item:last-child { border-bottom: none; }
+    .more-dropdown-item:active { background: #f5f5f5; }
+    .more-dropdown-item.disabled {
+      color: #ccc;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .more-dropdown-item.danger { color: #1a1a1a; }
+
+    /* ===== 退款成功标注 ===== */
+    .refund-success-tip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #52c41a;
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+    .refund-success-tip i { font-size: 11px; }
+
+    /* ===== Toast ===== */
+    .orders-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      gap: 12px;
+    }
+    .orders-empty-icon {
+      width: 80px;
+      height: 80px;
+      background: #f0f0f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .orders-empty-icon i { font-size: 36px; color: #ccc; }
+    .orders-empty h3 { font-size: 15px; font-weight: 600; color: #999; }
+    .orders-empty p { font-size: 13px; color: #bbb; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 24px;
+      border-radius: 22px;
+      z-index: 500;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="orders-page">
+    <!-- 顶部导航 -->
+    <div class="orders-header">
+      <button class="header-back" onclick="goBack()">
+        <i class="fa fa-chevron-left"></i>
+      </button>
+      <h2>订单管理</h2>
+      <div style="width:32px;"></div>
+    </div>
+
+    <!-- 状态 Tab -->
+    <div class="orders-tabs">
+      <button class="orders-tab active" id="tab-all" onclick="switchTab('all')">全部</button>
+      <button class="orders-tab" id="tab-unpaid" onclick="switchTab('unpaid')">待支付</button>
+      <button class="orders-tab" id="tab-shipped" onclick="switchTab('shipped')">待收货</button>
+      <button class="orders-tab" id="tab-review" onclick="switchTab('review')">待评价</button>
+      <button class="orders-tab" id="tab-refund" onclick="switchTab('refund')">退款/售后</button>
+      <button class="orders-tab" id="tab-completed" onclick="switchTab('completed')">已完成</button>
+    </div>
+
+    <!-- 订单列表 -->
+    <div class="orders-content" id="ordersContent"></div>
+
+    <!-- 空状态 -->
+    <div class="orders-empty" id="ordersEmpty" style="display:none;">
+      <div class="orders-empty-icon">
+        <i class="fa fa-receipt"></i>
+      </div>
+      <h3>暂无相关订单</h3>
+      <p>快去选购心仪的商品吧</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* ===== Order Management Page ===== */
+
+    let currentTab = 'all';
+
+    // ---------- Mock Order Data ----------
+    const ORDER_DATA = {
+      all: [],
+      unpaid: [],
+      shipped: [],
+      review: [],
+      refund: [],
+      completed: [],
+    };
+
+    function initOrderData() {
+      var order1 = {
+        id: 'DD20260508001',
+        shop: '马尾食堂自营店',
+        status: 'unpaid',
+        statusText: '待支付',
+        statusClass: 'red',
+        items: [
+          { name: '手工鲜肉包子', spec: '单个装', price: 3.50, qty: 3, img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&h=100&fit=crop' },
+          { name: '红糖馒头', spec: '单个装', price: 2.00, qty: 2, img: 'https://images.unsplash.com/photo-1568471173242-461f0a730452?w=100&h=100&fit=crop' },
+        ],
+        total: 14.50,
+        deliveryFee: 5,
+        deliveryType: '到付',
+      };
+      var order2 = {
+        id: 'DD20260507002',
+        shop: '马尾食堂自营店',
+        status: 'shipped',
+        statusText: '待收货',
+        statusClass: 'orange',
+        items: [
+          { name: '招牌卤牛肉', spec: '约200g', price: 38.00, qty: 1, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=100&h=100&fit=crop' },
+          { name: '卤猪耳', spec: '约150g', price: 22.00, qty: 1, img: 'https://images.unsplash.com/photo-1594041680534-e8c8cdebd659?w=100&h=100&fit=crop' },
+        ],
+        total: 60.00,
+        deliveryFee: 5,
+        deliveryType: '包邮',
+      };
+      var order3 = {
+        id: 'DD20260506003',
+        shop: '马尾食堂自营店',
+        status: 'review',
+        statusText: '待评价',
+        statusClass: 'orange',
+        items: [
+          { name: '蛋黄酥礼盒', spec: '8枚装', price: 68.00, qty: 1, img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&h=100&fit=crop' },
+        ],
+        total: 68.00,
+        deliveryFee: 5,
+        deliveryType: '包邮',
+      };
+      var order4 = {
+        id: 'DD20260504004',
+        shop: '马尾食堂自营店',
+        status: 'refund',
+        statusText: '退款/售后',
+        statusClass: 'gray',
+        items: [
+          { name: '蜂蜜小蛋糕', spec: '6个装', price: 15.00, qty: 1, img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=100&h=100&fit=crop' },
+        ],
+        total: 15.00,
+        deliveryFee: 5,
+        deliveryType: '包邮',
+        refundSuccess: true,
+        refundAmount: 22.00,
+      };
+      var order5 = {
+        id: 'DD20260502005',
+        shop: '马尾食堂自营店',
+        status: 'completed',
+        statusText: '已完成',
+        statusClass: 'green',
+        items: [
+          { name: '豆沙包', spec: '3个装', price: 9.00, qty: 1, img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=100&h=100&fit=crop' },
+        ],
+        total: 9.00,
+        deliveryFee: 5,
+        deliveryType: '包邮',
+        completedDate: '2026-04-20',
+      };
+      var order6 = {
+        id: 'DD20260501006',
+        shop: '马尾食堂自营店',
+        status: 'completed',
+        statusText: '已完成',
+        statusClass: 'green',
+        items: [
+          { name: '红糖发糕', spec: '2个装', price: 8.00, qty: 1, img: 'https://images.unsplash.com/photo-1568471173242-461f0a730452?w=100&h=100&fit=crop' },
+        ],
+        total: 8.00,
+        deliveryFee: 5,
+        deliveryType: '包邮',
+        completedDate: '2026-04-05',
+      };
+
+      var allOrders = [order1, order2, order3, order4, order5, order6];
+      ORDER_DATA.all = allOrders;
+      ORDER_DATA.unpaid = allOrders.filter(function(o) { return o.status === 'unpaid'; });
+      ORDER_DATA.shipped = allOrders.filter(function(o) { return o.status === 'shipped'; });
+      ORDER_DATA.review = allOrders.filter(function(o) { return o.status === 'review'; });
+      ORDER_DATA.refund = allOrders.filter(function(o) { return o.status === 'refund'; });
+      ORDER_DATA.completed = allOrders.filter(function(o) { return o.status === 'completed'; });
+    }
+
+    initOrderData();
+
+    // ---------- Render ----------
+    function renderOrders() {
+      closeAllMoreMenus();
+      var orders = ORDER_DATA[currentTab] || [];
+      var content = document.getElementById('ordersContent');
+      var emptyEl = document.getElementById('ordersEmpty');
+
+      if (orders.length === 0) {
+        content.innerHTML = '';
+        emptyEl.style.display = '';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      content.innerHTML = orders.map(renderOrderCard).join('');
+    }
+
+    function renderOrderCard(order) {
+      var goodsHtml = order.items.map(function(item) {
+        return '<div class="goods-item">' +
+          '<div class="goods-img"><img src="' + item.img + '" alt="' + item.name + '" onerror="this.src=\'https://via.placeholder.com/56?text=商品\'"></div>' +
+          '<div class="goods-info"><div class="goods-name">' + item.name + '</div><div class="goods-spec">' + item.spec + '</div></div>' +
+          '<div class="goods-right"><div class="goods-price"><small>¥</small>' + item.price.toFixed(2) + '</div><div class="goods-qty">x' + item.qty + '</div></div>' +
+          '</div>';
+      }).join('');
+
+      // 操作按钮
+      var btnsHtml = '';
+      if (order.status === 'shipped') {
+        btnsHtml = '' +
+          '<button class="order-btn btn-outline" onclick="onAction(\'延长收货\', \'' + order.id + '\')">延长收货</button>' +
+          '<button class="order-btn btn-outline" onclick="onAction(\'查看物流\', \'' + order.id + '\')">查看物流</button>' +
+          '<button class="order-btn btn-primary" onclick="onAction(\'确认收货\', \'' + order.id + '\')">确认收货</button>';
+      } else if (order.status === 'review') {
+        btnsHtml = '' +
+          '<button class="order-btn btn-outline" onclick="onAction(\'再次购买\', \'' + order.id + '\')">再次购买</button>' +
+          '<button class="order-btn btn-primary" onclick="onAction(\'去评价\', \'' + order.id + '\')">去评价</button>';
+      } else if (order.status === 'refund') {
+        if (order.refundSuccess) {
+          btnsHtml = '' +
+            '<button class="order-btn btn-outline" onclick="onAction(\'再次购买\', \'' + order.id + '\')">再次购买</button>' +
+            '<button class="order-btn btn-outline" onclick="onAction(\'联系商家\', \'' + order.id + '\')">联系商家</button>';
+        } else {
+          btnsHtml = '' +
+            '<button class="order-btn btn-outline" onclick="onAction(\'再次购买\', \'' + order.id + '\')">再次购买</button>' +
+            '<button class="order-btn btn-outline" onclick="onAction(\'取消申请\', \'' + order.id + '\')">取消申请</button>' +
+            '<button class="order-btn btn-outline" onclick="onAction(\'联系商家\', \'' + order.id + '\')">联系商家</button>';
+        }
+      } else if (order.status === 'completed') {
+        var daysOld = getDaysSince(order.completedDate);
+        var reviewDisabled = daysOld > 15 ? ' disabled' : '';
+        var reviewBtn = daysOld > 15 ? '' : '<button class="order-btn btn-primary" onclick="onAction(\'去评价\', \'' + order.id + '\')">去评价</button>';
+        btnsHtml = '' +
+          '<button class="order-btn btn-outline" onclick="onAction(\'再次购买\', \'' + order.id + '\')">再次购买</button>' +
+          '<button class="order-btn btn-outline' + reviewDisabled + '" onclick="onAction(\'申请售后\', \'' + order.id + '\')">申请售后</button>' +
+          reviewBtn;
+      } else if (order.status === 'unpaid') {
+        btnsHtml = '<button class="order-btn btn-primary" onclick="onAction(\'去支付\', \'' + order.id + '\')">去支付</button>';
+      } else {
+        btnsHtml = '<button class="order-btn btn-outline" onclick="onAction(\'查看详情\', \'' + order.id + '\')">查看详情</button>';
+      }
+
+      // 更多菜单
+      var moreItemsHtml = getMoreMenuItems(order);
+      var refundSuccessTip = '';
+      if (order.refundSuccess) {
+        refundSuccessTip = '<div class="refund-success-tip"><i class="fa fa-check-circle"></i> 退款成功 余额+¥' + order.refundAmount.toFixed(2) + '</div>';
+      }
+
+      var totalQty = order.items.reduce(function(s, i) { return s + i.qty; }, 0);
+
+      return '<div class="order-card" id="card-' + order.id + '">' +
+        '<div class="order-shop">' +
+        '<div class="shop-left" onclick="goShop()">' +
+        '<div class="shop-icon"><i class="fa fa-store"></i></div>' +
+        '<span class="shop-name">' + order.shop + '</span>' +
+        '<i class="fa fa-chevron-right" style="font-size:11px;color:#ccc;margin-left:2px;"></i>' +
+        '</div>' +
+        '<span class="order-status ' + order.statusClass + '">' + order.statusText + '</span>' +
+        '</div>' +
+        '<div class="order-goods" onclick="goOrderDetail(\'' + order.id + '\')">' + goodsHtml + '</div>' +
+        '<div class="order-footer" style="flex-direction:column;align-items:flex-end;gap:6px;">' +
+        '<div class="order-total">共' + totalQty + '件商品，合计：<strong>¥' + order.total.toFixed(2) + '</strong></div>' +
+        refundSuccessTip +
+        '</div>' +
+        '<div class="order-footer" style="padding-top:0;border-top:none;">' +
+        '<div class="more-wrap">' +
+        '<button class="more-btn" id="more-btn-' + order.id + '" onclick="toggleMoreMenu(\'' + order.id + '\', event)">更多</button>' +
+        '<div class="more-dropdown" id="more-dropdown-' + order.id + '">' + moreItemsHtml + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">' + btnsHtml + '</div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    function getMoreMenuItems(order) {
+      var items = [];
+      var needReturnLogistics = (order.deliveryType === '包邮' || order.deliveryType === '到付') && !order.refundSuccess;
+      if (order.status === 'unpaid') {
+        items.push({ label: '删除订单', action: '删除订单', danger: true });
+      } else if (order.status === 'shipped') {
+        items.push({ label: '申请售后', action: '申请售后' });
+        items.push({ label: '删除订单', action: '删除订单', danger: true });
+      } else if (order.status === 'review') {
+        items.push({ label: '申请售后', action: '申请售后' });
+        items.push({ label: '删除订单', action: '删除订单', danger: true });
+      } else if (order.status === 'refund') {
+        if (needReturnLogistics) {
+          items.push({ label: '填写退货物流', action: '填写退货物流' });
+        }
+        items.push({ label: '删除订单', action: '删除订单', danger: true });
+      } else if (order.status === 'completed') {
+        items.push({ label: '删除订单', action: '删除订单', danger: true });
+      } else if (order.status === 'all') {
+        items.push({ label: '删除订单', action: '删除订单', danger: true });
+      }
+      return items.map(function(item) {
+        return '<div class="more-dropdown-item' + (item.danger ? ' danger' : '') + '" onclick="onAction(\'' + item.action + '\', \'' + order.id + '\')">' + item.label + '</div>';
+      }).join('');
+    }
+
+    function getDaysSince(dateStr) {
+      if (!dateStr) return 0;
+      var parts = dateStr.split('-');
+      var date = new Date(parts[0], parts[1] - 1, parts[2]);
+      var now = new Date();
+      return Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    }
+
+    function toggleMoreMenu(orderId, e) {
+      e.stopPropagation();
+      var dropdown = document.getElementById('more-dropdown-' + orderId);
+      var wasShown = dropdown.classList.contains('show');
+      closeAllMoreMenus();
+      if (!wasShown) {
+        dropdown.classList.add('show');
+      }
+    }
+
+    function closeAllMoreMenus() {
+      document.querySelectorAll('.more-dropdown').forEach(function(el) {
+        el.classList.remove('show');
+      });
+    }
+
+    document.addEventListener('click', closeAllMoreMenus);
+
+    // ---------- Tab Switch ----------
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.orders-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.getElementById('tab-' + tab).classList.add('active');
+      renderOrders();
+    }
+
+    // ---------- Badge Update ----------
+    function updateBadges() {
+      var counts = {
+        all: ORDER_DATA.all.length,
+        unpaid: ORDER_DATA.unpaid.length,
+        shipped: ORDER_DATA.shipped.length,
+        review: ORDER_DATA.review.length,
+        refund: ORDER_DATA.refund.length,
+        completed: ORDER_DATA.completed.length,
+      };
+      Object.keys(counts).forEach(function(key) {
+        var el = document.getElementById('badge-' + key);
+        if (el) {
+          el.textContent = counts[key];
+          el.style.display = counts[key] > 0 ? 'inline-flex' : 'none';
+        }
+      });
+    }
+
+    // ---------- Actions ----------
+    function onAction(action, orderId) {
+      closeAllMoreMenus();
+      switch (action) {
+        case '去支付':
+          if (window.parent !== window) {
+            window.parent.postMessage({ type: 'switchPage', page: 'confirm' }, '*');
+          } else {
+            toast('正在跳转支付...');
+          }
+          break;
+        case '删除订单':
+          toast('订单已删除');
+          break;
+        case '确认收货':
+          toast('已确认收货');
+          break;
+        case '延长收货':
+          toast('已延长收货时间3天');
+          break;
+        case '查看物流':
+          toast('正在加载物流信息...');
+          break;
+        case '再次购买':
+          toast('已加入购物车');
+          break;
+        case '去评价':
+          toast('正在跳转评价页面...');
+          break;
+        case '申请售后':
+          toast('正在跳转售后申请页面...');
+          break;
+        case '取消申请':
+          toast('已取消售后申请');
+          break;
+        case '联系商家':
+          toast('正在跳转客服聊天...');
+          break;
+        case '填写退货物流':
+          toast('请填写退货物流单号');
+          break;
+        case '查看详情':
+          toast('正在跳转订单详情...');
+          break;
+      }
+    }
+
+    function goOrderDetail(orderId) {
+      toast('正在跳转订单详情...');
+    }
+
+    function goShop() {
+      toast('正在跳转店铺首页...');
+    }
+
+    function goBack() {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'home' }, '*');
+      } else {
+        history.back();
+      }
+    }
+
+    function toast(msg) {
+      var old = document.querySelector('.toast');
+      if (old) old.remove();
+      var el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2000);
+    }
+
+    // ---------- External Tab Control ----------
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'setTab' && e.data.tab) {
+        switchTab(e.data.tab);
+      }
+    });
+
+    // ---------- Init ----------
+    window.addEventListener('DOMContentLoaded', function() {
+      updateBadges();
+      renderOrders();
+    });
+  </script>
+</body>
+</html>
