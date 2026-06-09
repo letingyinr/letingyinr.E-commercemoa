@@ -514,7 +514,7 @@
       gap: 10px;
     }
 
-    /* 商品卡片（单列纵向布局） */
+    /* 商品卡片（横向布局：左图右文） */
     .cat-card {
       background: #fff;
       border-radius: var(--radius-lg);
@@ -523,6 +523,7 @@
       cursor: pointer;
       transition: transform 0.2s;
       display: flex;
+      align-items: center;
       margin-bottom: 10px;
     }
     .cat-card:active { transform: scale(0.98); }
@@ -535,6 +536,8 @@
       background: #f9f9f9;
       overflow: hidden;
       position: relative;
+      margin: 8px 0 8px 8px;
+      border-radius: 8px;
     }
     .cat-card-img img {
       width: 100%;
@@ -638,7 +641,7 @@
       text-decoration: line-through;
     }
 
-    /* 商品基础信息行：二级分类 / 规格 / 已售 */
+    /* 商品基础信息行：规格 / 已售 */
     .cat-card-levels {
       display: flex;
       align-items: center;
@@ -647,14 +650,10 @@
       flex-wrap: nowrap;
       min-width: 0;
     }
-    .cat-card-level2,
     .cat-card-meta {
       font-size: 11px;
       color: var(--text-tertiary);
       white-space: nowrap;
-    }
-    .cat-card-level2::after {
-      content: ' · ';
     }
 
     /* 加购按钮 - 卡片右下角 */
@@ -1373,26 +1372,6 @@
         tagH = '<span class="cat-card-tag" style="background:' + tagColor + '">' + p.tag + '</span>';
       }
 
-      // 市场价（单独一行）
-      var mktH = '';
-      if (p.marketPrice > 0) {
-        if (p.price > p.marketPrice) {
-          mktH = '<div class="cat-card-mkt-row">' +
-            '<span class="cat-card-mkt-arrow up"><i class="fa fa-arrow-up"></i></span>' +
-            '<span class="cat-card-mkt-price">市场价 ¥' + p.marketPrice.toFixed(1) + '</span>' +
-            '</div>';
-        } else if (p.price < p.marketPrice) {
-          mktH = '<div class="cat-card-mkt-row">' +
-            '<span class="cat-card-mkt-arrow down"><i class="fa fa-arrow-down"></i></span>' +
-            '<span class="cat-card-mkt-price">市场价 ¥' + p.marketPrice.toFixed(1) + '</span>' +
-            '</div>';
-        } else {
-          mktH = '<div class="cat-card-mkt-row">' +
-            '<span class="cat-card-mkt-price">市场价 ¥' + p.marketPrice.toFixed(1) + '</span>' +
-            '</div>';
-        }
-      }
-
       // 每日每人限份
       var dailyLimitH = p.dailyLimit ? '<span class="cat-card-daily-limit">每日每人限' + p.dailyLimit + '份</span>' : '';
 
@@ -1415,19 +1394,17 @@
 
       var cardOnClick = soldOut ? '' : 'event.stopPropagation();goToProductDetail(' + p.id + ')';
 
-      // 二级分类 / 规格 / 已售
-      var level2 = p.category || '';
+      // 规格 / 已售（已移除二级分类展示）
       var metaText = [];
       if (p.spec) metaText.push(p.spec);
       if (p.sales) metaText.push('已售 ' + formatNum(p.sales));
-      var levelH = (level2 || metaText.length)
+      var levelH = metaText.length
         ? '<div class="cat-card-levels">' +
-          (level2 ? '<span class="cat-card-level2">' + level2 + '</span>' : '') +
-          (metaText.length ? '<span class="cat-card-meta">' + metaText.join(' · ') + '</span>' : '') +
+          '<span class="cat-card-meta">' + metaText.join(' · ') + '</span>' +
           '</div>'
         : '';
 
-      // 市场价：同行划线显示（去掉"市场价"文字）
+      // 市场价：同行划线显示
       var mktH = '';
       if (p.marketPrice > 0) {
         mktH = '<span class="cat-card-mkt-inline">¥' + p.marketPrice.toFixed(1) + '</span>';
@@ -1436,26 +1413,22 @@
       return '<div class="cat-card' + (soldOut ? ' sold-out' : '') + '" onclick="' + cardOnClick + '">' +
         '<div class="cat-card-img">' +
         '<img src="' + (p.img || 'https://via.placeholder.com/200') + '" alt="' + p.name + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/200?text=\' + encodeURIComponent(p.name) + \'\'" />' +
+        (p.tag ? '<span class="cat-card-tag" style="background:' + tagColor + '">' + p.tag + '</span>' : '') +
         (soldOut ? '<div class="cat-card-soldout-tag">已售罄</div>' : '') +
-        btnH +
         '</div>' +
         '<div class="cat-card-body">' +
         '<div class="cat-card-name">' + p.name + '</div>' +
         levelH +
         '<div class="cat-card-meta-row">' +
         (p.limitNum > 0 ? '<span class="cat-card-limit">限购' + p.limitNum + '件</span>' : '') +
-        '</div>' +
-        '<div class="cat-card-meta-row">' +
-        deliveryTag +
         (dailyLimitH ? dailyLimitH : '') +
+        (deliveryTag ? deliveryTag : '') +
         '</div>' +
         '<div class="cat-card-bottom">' +
         '<span class="cat-card-price">¥' + p.price.toFixed(1) + '</span>' +
-        mktH +
+        (mktH ? mktH : '') +
         '</div>' +
-        '<div class="cat-card-action">' +
-        btnH +
-        '</div>' +
+        '<div class="cat-card-action">' + btnH + '</div>' +
         '</div>' +
         '</div>';
     }
