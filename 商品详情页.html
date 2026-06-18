@@ -5,1258 +5,1380 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>商品详情 - 马尾食堂</title>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    .detail-page {
-      background: var(--bg-color);
-      min-height: 100vh;
-      padding-bottom: 70px;
+    /* ============================================================
+       商品详情页样式
+       ============================================================ */
+    html, body { background: var(--bg-page); }
+    .detail-page { padding-bottom: 0; }
+
+    /* ----- 顶部导航双态 ----- */
+    .detail-nav {
+      position: fixed;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      z-index: 200;
+      transition: background .25s ease, box-shadow .25s ease;
+    }
+    .detail-nav__placeholder { height: calc(44px + var(--safe-top)); }
+    .detail-nav__bar {
+      height: calc(44px + var(--safe-top));
+      padding: var(--safe-top) 12px 0 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .detail-nav__icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      background: rgba(0,0,0,.25);
+      color: #fff;
+      transition: all .25s;
+      flex-shrink: 0;
+      border: none;
+    }
+    .detail-nav__icon:active { transform: scale(0.92); }
+    .detail-nav__search {
+      flex: 1;
+      height: 32px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.92);
+      display: none;
+      align-items: center;
+      padding: 0 14px;
+      gap: 6px;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .detail-nav__search.show { display: flex; }
+    .detail-nav__search:active { opacity: .8; }
+    /* 透明态 */
+    .detail-nav--top .detail-nav__icon { background: rgba(0,0,0,.25); color: #fff; }
+    /* 白色态 */
+    .detail-nav--solid {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .detail-nav--solid .detail-nav__icon {
+      background: transparent;
+      color: var(--text-primary);
+    }
+    .detail-nav--solid .detail-nav__icon:active { background: var(--bg-muted); }
+
+    .detail-tabs {
+      display: none;
+      height: 40px;
+      align-items: center;
+      justify-content: space-around;
+      background: #fff;
+      border-top: 1px solid var(--border-light);
+    }
+    .detail-tabs.show { display: flex; }
+    .detail-tab {
+      font-size: 14px;
+      color: var(--text-secondary);
+      position: relative;
+      height: 100%;
+      line-height: 40px;
+      cursor: pointer;
+      padding: 0 14px;
+    }
+    .detail-tab.active { color: var(--primary); font-weight: 600; }
+    .detail-tab.active::after {
+      content: ''; position: absolute;
+      left: 50%; bottom: 6px;
+      transform: translateX(-50%);
+      width: 22px; height: 2px;
+      background: var(--primary);
+      border-radius: 2px;
     }
 
-    /* 商品图片轮播区 */
-    .detail-img-area {
+    /* ----- 主体滚动区 ----- */
+    .detail-body {
+      background: var(--bg-page);
       position: relative;
-      background: #f0f0f0;
+    }
+    .detail-section { background: #fff; }
+    .detail-section + .detail-section { margin-top: 8px; }
+
+    /* Banner */
+    .detail-banner {
+      position: relative;
       width: 100%;
-      height: 320px;
+      height: 280px;
+      background: #f4f4f4;
       overflow: hidden;
     }
-    .detail-img-area img {
-      width: 100%;
+    .detail-banner .slides {
+      display: flex;
       height: 100%;
+      transition: transform .5s cubic-bezier(.25,.46,.45,.94);
+    }
+    .detail-banner .slide {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .detail-banner .slide img {
+      width: 100%; height: 100%;
       object-fit: cover;
       display: block;
     }
-    .detail-img-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      color: #ccc;
-    }
-    .detail-img-placeholder i { font-size: 56px; }
-    .detail-img-placeholder span { font-size: 13px; }
-    .detail-back {
+    .detail-banner .dots {
       position: absolute;
-      top: 10px;
-      left: 12px;
-      width: 36px;
-      height: 36px;
+      bottom: 14px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 6px;
+      z-index: 5;
+    }
+    .detail-banner .dot {
+      width: 6px; height: 6px;
       border-radius: 50%;
-      background: rgba(0,0,0,0.4);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
+      background: rgba(255,255,255,.5);
+      transition: all .3s;
       cursor: pointer;
-      transition: all 0.2s;
-      backdrop-filter: blur(4px);
+      border: none;
     }
-    .detail-back:active { transform: scale(0.9); background: rgba(0,0,0,0.6); }
-    .detail-share {
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.4);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      backdrop-filter: blur(4px);
-    }
-    .detail-share:active { transform: scale(0.9); }
-    .detail-img-count {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      background: rgba(0,0,0,0.5);
-      color: #fff;
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 10px;
+    .detail-banner .dot.active {
+      width: 18px;
+      background: #fff;
+      border-radius: 3px;
     }
 
-    /* 价格与商品名称合并区域 */
-    .detail-header-section {
-      background: #fff;
-      padding: 14px 14px 12px;
-      margin-bottom: 8px;
+    /* 商品信息卡 */
+    .detail-info-card {
+      padding: 16px 14px 0;
+      background: linear-gradient(180deg, #FFEFE5 0%, #fff 70%);
     }
     .detail-price-row {
       display: flex;
       align-items: baseline;
+      gap: 10px;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 4px;
     }
-    .detail-price {
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--error);
-    }
-    .detail-market-inline {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .detail-market-label {
+    .detail-price-row .product-price { font-size: 28px; }
+    .detail-price-row .product-price small { font-size: 16px; }
+    .detail-sales {
+      margin-left: auto;
+      color: var(--text-tertiary);
       font-size: 12px;
-      color: var(--text-tertiary);
-    }
-    .detail-market-price {
-      font-size: 13px;
-      color: var(--text-tertiary);
-    }
-    .detail-market-arrow {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      display: flex;
-      align-items: center;
-    }
-    .detail-market-arrow i {
-      color: #52c41a;
-      font-size: 14px;
-    }
-    .detail-sold-count {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      margin-bottom: 8px;
     }
     .detail-name {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-primary);
+      font-size: 17px;
       line-height: 1.5;
-      margin-bottom: 6px;
-    }
-    .detail-desc-text {
-      font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    /* 配送/店铺信息 */
-    .detail-delivery-section {
-      background: #fff;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .detail-delivery-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      color: var(--text-tertiary);
-    }
-    .detail-delivery-item i { font-size: 12px; }
-
-    /* 已选规格 */
-    .detail-spec-section {
-      background: #fff;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .detail-spec-section:active { background: #f9f9f9; }
-    .detail-spec-left { font-size: 13px; color: var(--text-tertiary); margin-bottom: 4px; }
-    .detail-spec-value { font-size: 14px; color: var(--text-primary); font-weight: 500; }
-    .detail-spec-arrow { color: var(--text-tertiary); font-size: 13px; }
-
-    /* 店铺信息 */
-    .detail-shop-section {
-      background: #fff;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .detail-shop-section:active { background: #f9f9f9; }
-    .detail-shop-logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      background: var(--primary-light);
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .detail-shop-info { flex: 1; }
-    .detail-shop-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-    .detail-shop-desc { font-size: 12px; color: var(--text-tertiary); }
-    .detail-shop-arrow { color: var(--text-tertiary); font-size: 14px; }
-
-    /* 商品详情 */
-    .detail-content-section {
-      background: #fff;
-      padding: 14px;
-      margin-bottom: 8px;
-    }
-    .detail-section-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .detail-section-title::before {
-      content: '';
-      width: 3px;
-      height: 14px;
-      background: var(--primary);
-      border-radius: 2px;
-    }
-    .detail-section-content {
-      font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.8;
-    }
-    .detail-section-content p { margin-bottom: 8px; }
-    .detail-section-content p:last-child { margin-bottom: 0; }
-    .detail-images-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin-top: 10px;
-    }
-    .detail-images-grid img {
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      border-radius: var(--radius-md);
-      display: block;
-    }
-
-    /* 推荐模块（标签切换） */
-    .detail-recommend-section {
-      background: #fff;
-      padding: 14px;
-      margin-bottom: 8px;
-    }
-    .detail-recommend-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .detail-recommend-tabs {
-      display: flex;
-      border: 1px solid var(--primary);
-      border-radius: 20px;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    .detail-recommend-tab {
-      padding: 4px 14px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      color: var(--primary);
-      background: #fff;
-      user-select: none;
-    }
-    .detail-recommend-tab:first-child { border-radius: 20px 0 0 20px; }
-    .detail-recommend-tab:last-child { border-radius: 0 20px 20px 0; }
-    .detail-recommend-tab.active {
-      background: var(--primary);
-      color: #fff;
-    }
-    .detail-recommend-scroll {
-      display: none;
-      gap: 10px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .detail-recommend-scroll.active { display: flex; }
-    .detail-recommend-scroll::-webkit-scrollbar { display: none; }
-    .detail-recommend-card {
-      flex-shrink: 0;
-      width: 120px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-color);
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      background: #fff;
-    }
-    .detail-recommend-card:active {
-      transform: scale(0.97);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    }
-    .detail-recommend-card-img {
-      width: 100%;
-      height: 90px;
-      object-fit: cover;
-      display: block;
-      background: #f5f5f5;
-    }
-    .detail-recommend-card-body {
-      padding: 8px;
-    }
-    .detail-recommend-card-name {
-      font-size: 12px;
+      margin: 10px 0 12px;
       color: var(--text-primary);
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-bottom: 4px;
+      font-weight: 500;
     }
-    .detail-recommend-card-price {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--error);
-      margin-bottom: 2px;
-    }
-    .detail-recommend-card-meta {
-      font-size: 11px;
-      color: var(--text-tertiary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .detail-name .tag { margin-left: 6px; vertical-align: middle; }
 
-    /* 参数信息 */
-    .detail-params-section {
-      background: #fff;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-    }
-    .detail-params-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 10px;
+    /* 供应商 */
+    .detail-supplier {
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-    .detail-params-title::before {
-      content: '';
-      width: 3px;
-      height: 14px;
-      background: var(--primary);
-      border-radius: 2px;
-    }
-    .detail-params-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .detail-param-item {
-      font-size: 12px;
-      color: var(--text-secondary);
-      display: flex;
-      gap: 4px;
-    }
-    .detail-param-label { color: var(--text-tertiary); }
-    .detail-param-value { color: var(--text-primary); flex: 1; }
-
-    /* 用户评价 */
-    .detail-reviews-section {
-      background: #fff;
-      padding: 14px;
-      margin-bottom: 8px;
-    }
-    .detail-reviews-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .detail-reviews-title {
-      font-size: 14px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .detail-reviews-title::before {
-      content: '';
-      width: 3px;
-      height: 14px;
-      background: var(--primary);
-      border-radius: 2px;
-    }
-    .detail-reviews-more {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      display: flex;
-      align-items: center;
-      gap: 2px;
+      gap: 10px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border-light);
+      margin-top: 10px;
       cursor: pointer;
     }
-    .review-item {
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .review-item:last-child { border-bottom: none; }
-    .review-user {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-    .review-avatar {
-      width: 28px;
-      height: 28px;
+    .detail-supplier__icon {
+      width: 40px; height: 40px;
       border-radius: 50%;
       background: var(--primary-light);
       color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
       flex-shrink: 0;
     }
-    .review-user-name { font-size: 13px; color: var(--text-secondary); flex: 1; }
-    .review-stars { color: #ffc107; font-size: 11px; }
-    .review-text { font-size: 13px; color: var(--text-primary); line-height: 1.6; }
-    .review-time { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+    .detail-supplier__info { flex: 1; min-width: 0; }
+    .detail-supplier__name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .detail-supplier__meta { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+    .detail-supplier__arrow { color: var(--text-tertiary); font-size: 12px; }
 
-    /* 底部操作栏 */
-    .detail-bottom-bar {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 430px;
-      background: #fff;
-      border-top: 1px solid var(--border-color);
+    /* 加购选择入口 */
+    .detail-sku-row {
       display: flex;
       align-items: center;
-      padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
-      z-index: 100;
-      gap: 0;
-    }
-    .detail-action-btns {
-      display: flex;
-      flex-shrink: 0;
-    }
-    .detail-icon-btn {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0;
-      background: #fff;
+      gap: 10px;
+      padding: 14px 0;
+      border-top: 1px solid var(--border-light);
       cursor: pointer;
-      transition: all 0.2s;
-      color: #666;
-      position: relative;
-      flex-shrink: 0;
     }
-    .detail-icon-btn:first-child { border-radius: 20px 0 0 20px; }
-    .detail-icon-btn:last-child { border-radius: 0 20px 20px 0; border-left: none; }
-    .detail-icon-btn:active { transform: scale(0.95); background: #f5f5f5; }
-    .detail-icon-btn i { font-size: 18px; line-height: 1; }
-    .detail-icon-btn.active { color: #ffc107; }
-    .detail-icon-btn .badge {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      min-width: 14px;
-      height: 14px;
-      border-radius: 7px;
-      font-size: 9px;
-    }
-    .detail-cart-btn {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0;
-      background: #fff;
-      cursor: pointer;
-      transition: all 0.2s;
-      color: #666;
-      position: relative;
-      flex-shrink: 0;
-    }
-    .detail-cart-btn:active { transform: scale(0.95); background: #f5f5f5; }
-    .detail-cart-btn i { font-size: 18px; line-height: 1; }
-    .detail-cart-btn .badge {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      min-width: 14px;
-      height: 14px;
-      border-radius: 7px;
-      font-size: 9px;
-    }
-    .detail-add-btn {
-      flex: 2;
-      padding: 12px;
-      border-radius: 20px;
-      margin-left: 10px;
-      background: linear-gradient(135deg, #ff9800, #ff6b00);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-    }
-    .detail-add-btn:active { transform: scale(0.97); opacity: 0.9; }
-    .detail-buy-btn {
-      flex: 2;
-      padding: 12px;
-      border-radius: 20px;
-      margin-left: 6px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-    }
-    .detail-buy-btn:active { transform: scale(0.97); opacity: 0.9; }
+    .detail-sku-row__label { color: var(--text-tertiary); font-size: 13px; flex-shrink: 0; }
+    .detail-sku-row__value { flex: 1; font-size: 14px; color: var(--text-primary); }
+    .detail-sku-row__arrow { color: var(--text-tertiary); font-size: 12px; }
 
-    /* ===== 规格弹窗（与分类页一致） ===== */
-    .spec-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 500;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
+    /* 商品参数 */
+    .detail-params {
+      border-top: 1px solid var(--border-light);
+      padding: 12px 0 16px;
     }
-    .spec-overlay.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .spec-dialog {
-      width: 100%;
-      max-width: 430px;
-      background: #fff;
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-      transform: translateY(100%);
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      max-height: 80vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .spec-overlay.show .spec-dialog {
-      transform: translateY(0);
-    }
-    .spec-handle {
-      width: 36px;
-      height: 4px;
-      background: #d9d9d9;
-      border-radius: 2px;
-      margin: 10px auto 0;
-      flex-shrink: 0;
-    }
-    .spec-header {
+    .detail-params__row {
       display: flex;
       align-items: flex-start;
-      padding: 14px 14px 10px;
       gap: 12px;
-      border-bottom: 1px solid var(--border-color);
-      flex-shrink: 0;
+      font-size: 13px;
+      line-height: 1.7;
+      padding: 4px 0;
     }
-    .spec-img {
-      width: 80px;
-      height: 80px;
-      border-radius: var(--radius-md);
-      object-fit: cover;
+    .detail-params__row label {
+      color: var(--text-tertiary);
       flex-shrink: 0;
+      width: 64px;
     }
-    .spec-info {
+    .detail-params__row span { color: var(--text-primary); flex: 1; }
+
+    /* 区块标题 */
+    .section-title {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 14px 8px;
+    }
+    .section-title h3 {
+      font-size: 15px; font-weight: 600; color: var(--text-primary);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-title h3::before {
+      content: ''; width: 3px; height: 14px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+    .section-title h3 .review-count {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+    .section-title h3 .review-good-rate {
+      font-size: 11px;
+      padding: 1px 6px;
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      border-radius: 10px;
+      color: #52c41a;
+      font-weight: 400;
+    }
+    .section-title .more {
+      font-size: 12px; color: var(--text-tertiary);
+      display: flex; align-items: center; gap: 2px;
+      cursor: pointer;
+    }
+
+    /* 评价概览 */
+    .detail-review-summary {
+      display: flex; align-items: center;
+      gap: 18px;
+      padding: 4px 14px 14px;
+    }
+    .detail-review-summary__score {
+      font-size: 32px;
+      color: var(--error);
+      font-weight: 700;
+      line-height: 1;
+    }
+    .detail-review-summary__meta {
       flex: 1;
-      overflow: hidden;
     }
-    .spec-name {
+    .detail-review-summary__stars {
+      color: #FFB300;
       font-size: 14px;
+      margin-top: 6px;
+    }
+    .detail-review-summary__stars i { margin-right: 1px; }
+    .detail-review-summary__count {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    .detail-review-list { padding: 0 14px; }
+    .detail-review-item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .detail-review-item:last-child { border-bottom: none; }
+    .detail-review-item__head {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; color: var(--text-tertiary);
+    }
+    .detail-review-item__name { color: var(--text-primary); font-weight: 500; font-size: 13px; }
+    .detail-review-item__stars {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .detail-review-item__stars i { font-size: 12px; margin-left: 1px; }
+    .detail-review-item__stars .star-label {
+      font-size: 12px;
+      font-weight: 500;
+      margin-left: 2px;
+    }
+    .detail-review-item__stars .star-label--good { color: #52c41a; }
+    .detail-review-item__stars .star-label--ok { color: #faad14; }
+    .detail-review-item__stars .star-label--bad { color: #f5222d; }
+    .detail-review-item__text {
+      margin: 8px 0;
+      font-size: 14px; line-height: 1.6;
       color: var(--text-primary);
+    }
+    .detail-review-item__imgs {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin: 8px 0;
+    }
+    .detail-review-item__imgs img {
+      width: 72px; height: 72px;
+      border-radius: 8px;
+      object-fit: cover;
+      cursor: pointer;
+      background: #f5f5f5;
+    }
+    .detail-review-item__imgs img:active { opacity: .8; }
+    .detail-review-item__meta {
+      font-size: 11px; color: var(--text-tertiary);
+      display: flex; gap: 8px;
+    }
+    .detail-review-all {
+      display: flex; align-items: center; justify-content: center;
+      gap: 4px;
+      padding: 14px;
+      font-size: 14px;
+      color: var(--primary);
+      cursor: pointer;
+    }
+    .detail-review-all:active { opacity: .7; }
+
+    /* 相似推荐 */
+    .detail-rec-tabs {
+      display: flex; gap: 8px;
+    }
+    .rec-tab {
+      padding: 4px 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .rec-tab.active {
+      background: var(--primary-light);
+      color: var(--primary);
       font-weight: 600;
+    }
+    .recommend-grid { padding: 0 14px 14px; }
+
+    /* 相似推荐 — 横向滑动+分页 */
+    .rv-swipe-wrapper {
+      overflow: hidden;
+      padding: 0 14px 0;
+    }
+    .rv-swipe-track {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 10px;
+    }
+    .rv-swipe-track::-webkit-scrollbar { display: none; }
+    .rv-card {
+      flex: 0 0 calc(33.333% - 6px);
+      min-width: calc(33.333% - 6px);
+      background: #fff;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      scroll-snap-align: start;
+      cursor: pointer;
+    }
+    .rv-card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      background: #f5f5f5;
+    }
+    .rv-card-body {
+      padding: 6px 6px 8px;
+    }
+    .rv-card-title {
+      font-size: 12px;
+      color: var(--text-primary);
       line-height: 1.4;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      margin-bottom: 4px;
+      height: 2.8em;
     }
-    .spec-price {
-      color: var(--error);
-      font-size: 18px;
-      font-weight: 700;
-      margin-top: 4px;
-    }
-    .spec-stock {
-      font-size: 11px;
-      color: var(--text-tertiary);
-      margin-top: 2px;
-    }
-    .spec-close {
-      font-size: 18px;
-      color: var(--text-tertiary);
-      cursor: pointer;
-      padding: 2px;
-      flex-shrink: 0;
-    }
-    .spec-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .spec-row {
+    .rv-card-bottom {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
     }
-    .spec-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      flex-shrink: 0;
+    .rv-card-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--error, #f5222d);
     }
-    .spec-options {
+    .rv-card-rating {
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+    .rv-card-rating i { color: #ffc107; margin-right: 1px; font-size: 10px; }
+    .rv-pagination {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+      justify-content: center;
+      gap: 5px;
+      padding: 4px 14px 12px;
     }
-    .spec-option {
-      padding: 4px 12px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-color);
+    .rv-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--border-color, #d9d9d9);
+      transition: all .25s;
+    }
+    .rv-dot.active {
+      width: 14px;
+      border-radius: 3px;
+      background: var(--primary, #1890FF);
+    }
+
+    /* 商品详情 */
+    .detail-intro {
+      padding: 0 14px 12px;
+      font-size: 14px; line-height: 1.7;
+      color: var(--text-secondary);
+    }
+    .detail-pics { padding: 0 14px 14px; }
+    .detail-pics img {
+      width: 100%; display: block;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #f5f5f5;
+    }
+
+    /* 底部操作栏 */
+    .detail-actionbar {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: #fff;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 8px calc(8px + var(--safe-bottom));
+      border-top: 1px solid var(--border-color);
+      box-shadow: 0 -4px 16px rgba(0,0,0,.04);
+    }
+    .detail-actionbar__icon {
+      flex: 0 0 48px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 2px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      position: relative;
+      padding: 4px 0;
+    }
+    .detail-actionbar__icon i { font-size: 18px; }
+    .detail-actionbar__icon:active { transform: scale(0.92); }
+    .detail-actionbar__icon .badge {
+      position: absolute;
+      top: 0; right: 6px;
+      min-width: 16px; height: 16px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      background: var(--error);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px;
+    }
+    .detail-actionbar__btn {
+      flex: 1;
+      height: 40px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity .2s, transform .15s;
+    }
+    .detail-actionbar__btn:active { transform: scale(0.97); }
+    .detail-actionbar__btn--cart {
+      background: linear-gradient(90deg, #FFB94E 0%, #FF8A3D 100%);
+    }
+    .detail-actionbar__btn--buy {
+      background: linear-gradient(135deg, #1890FF, #40a9ff);
+    }
+
+    /* 抽屉 / 弹层 */
+    .drawer {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%; max-width: 430px;
+      max-height: 80vh;
+      background: #fff;
+      border-radius: 18px 18px 0 0;
+      z-index: 600;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .drawer.show { transform: translateX(-50%) translateY(0); }
+    .drawer__head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .drawer__head i { color: var(--text-tertiary); cursor: pointer; }
+    .drawer__body {
+      overflow-y: auto;
+      padding: 14px;
+      flex: 1;
+    }
+    .drawer__foot {
+      padding: 12px 14px calc(12px + var(--safe-bottom));
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* 分享抽屉 */
+    .share-drawer__list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px 0;
+      padding: 8px 0 16px;
+    }
+    .share-item {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer;
+    }
+    .share-item:active { transform: scale(0.92); }
+    .share-item i {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .share-item span { font-size: 12px; color: var(--text-secondary); }
+    .share-drawer__url {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px;
+      background: var(--bg-muted);
+      border-radius: 10px;
       font-size: 12px;
       color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s;
+      margin-bottom: 10px;
+      word-break: break-all;
     }
-    .spec-option.active {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: var(--primary-light);
-    }
-    .spec-qty-ctrl {
-      display: flex;
-      align-items: center;
-      gap: 0;
-    }
-    .spec-qty-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.15s;
-      user-select: none;
-    }
-    .spec-qty-btn.dec {
-      background: #fff;
-      color: var(--primary);
-      border: 1.5px solid var(--primary);
-    }
-    .spec-qty-btn.inc {
-      background: var(--primary);
-      color: #fff;
-      border: 1.5px solid var(--primary);
-    }
-    .spec-qty-num {
-      min-width: 40px;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-    .spec-limit-tip {
-      font-size: 11px;
-      color: var(--text-tertiary);
-      margin-left: 6px;
-    }
-    .spec-footer {
-      display: flex;
-      gap: 0;
+    .share-drawer__url button {
       flex-shrink: 0;
-      border-top: 1px solid var(--border-color);
-    }
-    .spec-btn {
-      flex: 1;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .spec-btn-cart {
-      background: #fff;
-      color: var(--primary);
-      border-top: 1px solid var(--border-color);
-    }
-    .spec-btn-cart:active { background: var(--primary-light); }
-    .spec-btn-buy {
       background: var(--primary);
       color: #fff;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 14px;
     }
-    .spec-btn-buy:active { background: var(--primary-dark); }
+
+    /* SKU 抽屉 */
+    .sku-drawer .sku-head {
+      display: flex; align-items: flex-start; gap: 12px;
+      margin-top: -34px;
+      padding: 0 4px 14px;
+    }
+    .sku-drawer .sku-head img {
+      width: 80px; height: 80px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #f5f5f5;
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    }
+    .sku-drawer .sku-head .sku-price {
+      font-size: 22px;
+      color: var(--error);
+      font-weight: 700;
+    }
+    .sku-drawer .sku-head .sku-stock {
+      font-size: 12px; color: var(--text-tertiary); margin-top: 4px;
+    }
+    .sku-drawer .sku-row {
+      margin-bottom: 18px;
+    }
+    .sku-drawer .sku-row__label {
+      font-size: 13px; color: var(--text-tertiary); margin-bottom: 10px;
+    }
+    .sku-options {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .sku-option {
+      padding: 6px 14px;
+      border-radius: 16px;
+      background: var(--bg-muted);
+      color: var(--text-primary);
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .2s;
+    }
+    .sku-option.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+    .sku-row__qty {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .sku-row__qty .num-stepper {
+      display: flex; align-items: center; gap: 0;
+    }
+    .sku-row__qty .qty-btn {
+      width: 28px; height: 28px;
+      border: 1px solid var(--border-color);
+      background: #fafafa;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      color: var(--text-secondary);
+      transition: all .15s;
+      cursor: pointer;
+    }
+    .sku-row__qty .qty-btn:first-child { border-radius: 14px 0 0 14px; }
+    .sku-row__qty .qty-btn:last-child  { border-radius: 0 14px 14px 0; }
+    .sku-row__qty .qty-btn:active { background: #eee; }
+    .sku-row__qty .qty-num {
+      width: 50px; height: 28px;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 500;
+    }
+
+    /* 全屏图片预览 */
+    .img-preview {
+      position: fixed; inset: 0;
+      background: #000;
+      z-index: 9999;
+      display: none;
+      touch-action: pan-y;
+    }
+    .img-preview.show { display: flex; align-items: center; }
+    .img-preview__close {
+      position: absolute; top: 16px; left: 16px;
+      color: #fff; font-size: 22px;
+      z-index: 2; background: none; border: none;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-preview__counter {
+      position: absolute; top: 18px; left: 50%;
+      transform: translateX(-50%);
+      color: #fff; font-size: 14px;
+      background: rgba(0,0,0,.3);
+      padding: 4px 12px;
+      border-radius: 14px;
+      z-index: 2;
+    }
+    .img-preview__track {
+      display: flex;
+      width: 100%; height: 100%;
+      transition: transform .3s ease;
+    }
+    .img-preview__slide {
+      min-width: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-preview__slide img {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* loading 占位 */
+    .skeleton-line {
+      height: 14px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skel 1.4s infinite;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+    @keyframes skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   </style>
 </head>
 <body>
-  <div class="detail-page" id="detailPage">
+  <div class="page-container detail-page" id="detailPage">
 
-    <!-- 商品图片 -->
-    <div class="detail-img-area">
-      <img id="detailImg" src="" alt="商品图片" loading="lazy">
-      <div class="detail-img-placeholder" id="detailImgPlaceholder" style="display:none;">
-        <i class="fa fa-image"></i>
-        <span>商品图片</span>
+    <!-- ① 顶部导航 -->
+    <header class="detail-nav detail-nav--top" id="detailNav">
+      <div class="detail-nav__placeholder"></div>
+      <div class="detail-nav__bar">
+        <button class="detail-nav__icon" id="navBack" aria-label="返回">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <div class="detail-nav__search" id="navSearch" onclick="goToSearchPage()">
+          <i class="fa fa-search"></i>
+          <span>搜索商品</span>
+        </div>
+        <button class="detail-nav__icon" id="navShare" aria-label="分享" onclick="openShareDrawer()">
+          <i class="fa fa-share-alt"></i>
+        </button>
       </div>
-      <div class="detail-back" onclick="goBack()">
+      <nav class="detail-tabs" id="detailTabs">
+        <a class="detail-tab active" data-tab="info">商品</a>
+        <a class="detail-tab" data-tab="review">评价</a>
+        <a class="detail-tab" data-tab="desc">详情</a>
+        <a class="detail-tab" data-tab="recommend">推荐</a>
+      </nav>
+    </header>
+
+    <!-- ② 主体 -->
+    <main class="detail-body" id="detailBody">
+
+      <!-- 商品信息 section -->
+      <section data-anchor="info" class="detail-section" id="infoSection">
+        <!-- 轮播 Banner -->
+        <div class="detail-banner banner-carousel" id="detailBanner">
+          <div class="slides" id="bannerSlides"></div>
+          <div class="dots" id="bannerDots"></div>
+        </div>
+
+        <!-- 价格 / 名称 / 销量 -->
+        <div class="detail-info-card">
+          <div class="detail-price-row">
+            <span class="product-price">¥<big id="priceMain">0.0</big></span>
+            <span class="product-original-price" id="marketPrice"></span>
+            <span class="detail-sales" id="salesText">已售 0</span>
+          </div>
+          <h1 class="detail-name" id="nameText">加载中…</h1>
+
+          <!-- 供应商 -->
+          <div class="detail-supplier" id="supplierBox" onclick="goToHomeWithSupplier(currentDetailProduct().brand)">
+            <div class="detail-supplier__icon"><i class="fa fa-store"></i></div>
+            <div class="detail-supplier__info">
+              <div class="detail-supplier__name" id="supplierName">湖东食堂</div>
+              <div class="detail-supplier__meta">福建省永辉超市有限公司</div>
+            </div>
+            <i class="fa fa-chevron-right detail-supplier__arrow"></i>
+          </div>
+
+          <!-- 加购选择入口 -->
+          <div class="detail-sku-row" onclick="openSkuPicker()">
+            <span class="detail-sku-row__label">已选</span>
+            <span class="detail-sku-row__value" id="selectedSpecText">默认规格 1 份</span>
+            <i class="fa fa-chevron-right detail-sku-row__arrow"></i>
+          </div>
+
+          <!-- 商品参数 -->
+          <div class="detail-params" id="paramsBox"></div>
+        </div>
+      </section>
+
+      <!-- 用户评价 section -->
+      <section data-anchor="review" class="detail-section" id="reviewSection">
+        <div class="section-title">
+          <h3 id="reviewTitle">用户评价</h3>
+          <a class="more" href="javascript:;" onclick="goToReviewAll()">
+            查看全部 <i class="fa fa-chevron-right"></i>
+          </a>
+        </div>
+        <div class="detail-review-list" id="reviewList"></div>
+        <a class="detail-review-all" id="reviewAll" href="javascript:;" onclick="goToReviewAll()">
+          查看全部评价 <i class="fa fa-chevron-right"></i>
+        </a>
+      </section>
+
+      <!-- 相似推荐 section -->
+      <section data-anchor="recommend" class="detail-section" id="recommendSection">
+        <div class="section-title">
+          <h3>相似推荐</h3>
+          <div class="detail-rec-tabs">
+            <a class="rec-tab active" data-sort="price">低价推荐</a>
+            <a class="rec-tab" data-sort="rate">好评推荐</a>
+          </div>
+        </div>
+        <div class="rv-swipe-wrapper" id="recommendGrid"></div>
+      </section>
+
+      <!-- 商品详情 section -->
+      <section data-anchor="desc" class="detail-section" id="descSection">
+        <div class="section-title"><h3>商品详情</h3></div>
+        <div class="detail-intro" id="detailIntro"></div>
+        <div class="detail-pics" id="detailPics"></div>
+      </section>
+
+      <div style="height:80px;"></div>
+    </main>
+
+    <!-- ③ 底部操作栏 -->
+    <footer class="detail-actionbar" id="detailActionBar">
+      <button class="detail-actionbar__icon" id="favBtn" onclick="toggleFavorite()">
+        <i class="fa fa-star"></i><span>收藏</span>
+      </button>
+      <button class="detail-actionbar__icon" onclick="goToCartPage()">
+        <i class="fa fa-shopping-cart"></i><span>购物车</span>
+        <span class="badge cart-badge" id="cartBadge">0</span>
+      </button>
+      <button class="detail-actionbar__btn detail-actionbar__btn--cart" onclick="openSkuPicker()">加入购物车</button>
+      <button class="detail-actionbar__btn detail-actionbar__btn--buy" onclick="openSkuPicker(true, true)">立即购买</button>
+    </footer>
+
+    <!-- ④ 分享抽屉 -->
+    <div class="overlay" id="shareOverlay" onclick="closeShareDrawer()"></div>
+    <aside class="drawer share-drawer" id="shareDrawer">
+      <div class="drawer__head">
+        <span>分享商品</span>
+        <i class="fa fa-times" onclick="closeShareDrawer()"></i>
+      </div>
+      <div class="drawer__body">
+        <div class="share-drawer__list" id="shareChannelList">
+          <a class="share-item" onclick="doShare('wechat')"><i class="fab fa-weixin"></i><span>微信好友</span></a>
+          <a class="share-item" onclick="doShare('moments')"><i class="fab fa-weixin"></i><span>朋友圈</span></a>
+          <a class="share-item" onclick="doShare('qq')"><i class="fab fa-qq"></i><span>QQ</span></a>
+          <a class="share-item" onclick="doShare('link')"><i class="fa fa-link"></i><span>复制链接</span></a>
+        </div>
+        <div class="share-drawer__url" id="shareUrlBox">
+          <span id="shareUrlText"></span>
+          <button onclick="copyShareUrl()">复制</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ⑤ SKU 抽屉 -->
+    <div class="overlay" id="skuOverlay" onclick="closeSkuPicker()"></div>
+    <div class="drawer sku-drawer" id="skuDrawer">
+      <div class="drawer__body" id="skuBody"></div>
+      <div class="drawer__foot">
+        <button class="btn-primary" id="skuConfirm" onclick="confirmSku()" style="width:100%;height:44px;">确定</button>
+      </div>
+    </aside>
+
+    <!-- ⑥ 全屏图片预览 -->
+    <div class="img-preview" id="imgPreview">
+      <button class="img-preview__close" onclick="closeImgPreview()" aria-label="关闭">
         <i class="fa fa-chevron-left"></i>
-      </div>
-      <div class="detail-share" onclick="showToast('分享功能即将上线', 'warning')">
-        <i class="fa fa-share-alt"></i>
-      </div>
-      <div class="detail-img-count" id="detailImgCount">1/4</div>
-    </div>
-
-    <!-- 价格与商品名称合并区域 -->
-    <div class="detail-header-section">
-      <div class="detail-price-row">
-        <span class="detail-price" id="detailPrice">¥0.0</span>
-        <span class="detail-market-inline" id="detailMarketInline">
-          <span class="detail-market-arrow"><i class="fa fa-arrow-down"></i></span>
-          <span class="detail-market-label">市场价</span>
-          <span class="detail-market-price" id="detailMarketPrice">¥0.0</span>
-        </span>
-      </div>
-      <div class="detail-sold-count" id="detailSoldCount">已售 0 件</div>
-      <div class="detail-name" id="detailName">加载中...</div>
-      <div class="detail-desc-text" id="detailDescText">精选食材，现做现卖，新鲜美味</div>
-    </div>
-
-    <!-- 已选规格 -->
-    <div class="detail-spec-section" onclick="openSpecDialog()">
-      <div>
-        <div class="detail-spec-left">已选</div>
-        <div class="detail-spec-value" id="detailSpecValue">默认规格</div>
-      </div>
-      <i class="fa fa-chevron-right detail-spec-arrow"></i>
-    </div>
-
-    <!-- 店铺信息 -->
-    <div class="detail-shop-section" onclick="showToast('店铺详情即将上线', 'warning')">
-      <div class="detail-shop-logo"><i class="fa fa-store"></i></div>
-      <div class="detail-shop-info">
-        <div class="detail-shop-name">马尾食堂</div>
-        <div class="detail-shop-desc">已售 12.8万+ 件 · 好评率 98%</div>
-      </div>
-      <i class="fa fa-chevron-right detail-shop-arrow"></i>
-    </div>
-
-    <!-- 商品参数 -->
-    <div class="detail-params-section">
-      <div class="detail-params-title">商品参数</div>
-      <div class="detail-params-grid" id="detailParamsGrid">
-        <!-- 动态生成 -->
-      </div>
-    </div>
-
-    <!-- 商品详情 -->
-    <div class="detail-content-section">
-      <div class="detail-section-title">商品详情</div>
-      <div class="detail-section-content" id="detailSectionContent">
-        <p>精选新鲜食材，由食堂专业厨师团队当日制作。</p>
-        <p>制作过程严格遵循食品安全标准，新鲜、卫生、健康。</p>
-        <p>适合早餐、午餐、晚餐多种场景，老少皆宜。</p>
-        <p>温馨提示：请在购买后2小时内食用，口感最佳。</p>
-      </div>
-      <div class="detail-images-grid" id="detailImagesGrid"></div>
-    </div>
-
-    <!-- 推荐模块（标签切换） -->
-    <div class="detail-recommend-section">
-      <div class="detail-recommend-header">
-        <div class="detail-section-title" style="font-size:14px;font-weight:600;">相似推荐</div>
-        <div class="detail-recommend-tabs">
-          <div class="detail-recommend-tab active" id="tabLowPrice" onclick="switchRecommendTab('low')">低价推荐</div>
-          <div class="detail-recommend-tab" id="tabHighRate" onclick="switchRecommendTab('high')">好评推荐</div>
-        </div>
-      </div>
-      <div class="detail-recommend-scroll active" id="lowPriceRecommend"></div>
-      <div class="detail-recommend-scroll" id="highRateRecommend"></div>
-    </div>
-
-    <!-- 用户评价 -->
-    <div class="detail-reviews-section">
-      <div class="detail-reviews-header">
-        <div class="detail-reviews-title">用户评价</div>
-        <div class="detail-reviews-more" onclick="goToReviews()">查看全部 <i class="fa fa-chevron-right"></i></div>
-      </div>
-      <div id="reviewsList">
-        <div class="review-item">
-          <div class="review-user">
-            <div class="review-avatar"><i class="fa fa-user"></i></div>
-            <span class="review-user-name">张***</span>
-            <span class="review-stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></span>
-          </div>
-          <div class="review-text">味道很好，每天早上都会来买新鲜的包子，价格实惠，分量足！</div>
-          <div class="review-time">2026-05-08</div>
-        </div>
-        <div class="review-item">
-          <div class="review-user">
-            <div class="review-avatar"><i class="fa fa-user"></i></div>
-            <span class="review-user-name">李***</span>
-            <span class="review-stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-alt"></i></span>
-          </div>
-          <div class="review-text">卤牛肉特别入味，送到的时候还是热的，推荐大家试试！</div>
-          <div class="review-time">2026-05-07</div>
-        </div>
-        <div class="review-item">
-          <div class="review-user">
-            <div class="review-avatar"><i class="fa fa-user"></i></div>
-            <span class="review-user-name">王***</span>
-            <span class="review-stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></span>
-          </div>
-          <div class="review-text">早餐必备！豆浆配油条，完美组合！食堂的豆浆特别香浓。</div>
-          <div class="review-time">2026-05-06</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="height:70px;"></div>
-
-    <!-- 底部操作栏 -->
-    <div class="detail-bottom-bar">
-      <div class="detail-action-btns">
-        <div class="detail-icon-btn" id="detailFavBtn" onclick="toggleFavorite()">
-          <i class="fa fa-star-o" id="detailFavIcon"></i>
-        </div>
-        <div class="detail-cart-btn" onclick="goToCart()">
-          <i class="fa fa-shopping-cart"></i>
-          <span class="badge cart-badge" id="detailCartBadge" style="display:none;">0</span>
-        </div>
-      </div>
-      <div class="detail-add-btn" onclick="openSpecDialog('add')">
-        <i class="fa fa-cart-plus"></i> 加入购物车
-      </div>
-      <div class="detail-buy-btn" onclick="openSpecDialog('buy')">
-        立即购买
-      </div>
-    </div>
-
-    <!-- ===== 规格选择弹窗 ===== -->
-    <div class="spec-overlay" id="specOverlay" onclick="closeSpecDialog()">
-      <div class="spec-dialog" onclick="event.stopPropagation()">
-        <div class="spec-handle"></div>
-        <div class="spec-header">
-          <img class="spec-img" id="specImg" src="" alt="">
-          <div class="spec-info">
-            <div class="spec-name" id="specName"></div>
-            <div class="spec-price" id="specPrice"></div>
-            <div class="spec-stock" id="specStock"></div>
-          </div>
-          <div class="spec-close" onclick="closeSpecDialog()">
-            <i class="fa fa-times"></i>
-          </div>
-        </div>
-        <div class="spec-body">
-          <!-- 配送方式 -->
-          <div class="spec-row">
-            <div class="spec-label">配送方式</div>
-            <div class="spec-options" id="specDeliveryOptions">
-              <div class="spec-option active" onclick="selectSpecOption(this)">自取</div>
-              <div class="spec-option" onclick="selectSpecOption(this)">包邮</div>
-              <div class="spec-option" onclick="selectSpecOption(this)">到付</div>
-              <div class="spec-option" onclick="selectSpecOption(this)">送货</div>
-            </div>
-          </div>
-          <!-- 数量 -->
-          <div class="spec-row">
-            <div class="spec-label">购买数量</div>
-            <div class="spec-qty-ctrl">
-              <div class="spec-qty-btn dec" id="specQtyDec" onclick="changeSpecQty(-1)">−</div>
-              <div class="spec-qty-num" id="specQtyNum">1</div>
-              <div class="spec-qty-btn inc" id="specQtyInc" onclick="changeSpecQty(1)">+</div>
-            </div>
-            <span class="spec-limit-tip">限购2件</span>
-          </div>
-        </div>
-        <div class="spec-footer">
-          <div class="spec-btn spec-btn-cart" onclick="confirmSpecAddCart()">
-            <i class="fa fa-shopping-cart"></i> 加入购物车
-          </div>
-          <div class="spec-btn spec-btn-buy" onclick="confirmSpecBuy()">
-            立即购买
-          </div>
-        </div>
-      </div>
+      </button>
+      <div class="img-preview__counter" id="imgPreviewCounter">1/1</div>
+      <div class="img-preview__track" id="imgPreviewTrack"></div>
     </div>
   </div>
 
   <script src="app.js"></script>
   <script>
-    /* ===== 商品详情页逻辑 ===== */
+    /* ============================================================
+       商品详情页 - 业务逻辑
+       ============================================================ */
+    (function() {
+      'use strict';
 
-    let currentProduct = null;
-    let specQty = 1;
-    let selectedDelivery = '自取';
-    const SPEC_LIMIT = 2;
-
-    function updateDetailSpecValue() {
-      document.getElementById('detailSpecValue').textContent = selectedDelivery;
-    }
-
-    function loadProductDetail(productId) {
-      const product = PRODUCTS.find(p => p.id === productId);
-      if (!product) {
-        showToast('商品不存在', 'error');
-        return;
+      // ---------- 当前商品 ----------
+      function getProductIdFromUrl() {
+        const params = new URLSearchParams(location.search);
+        const id = parseInt(params.get('id') || params.get('productId') || '1');
+        return isNaN(id) ? 1 : id;
       }
-      currentProduct = product;
-      selectedDelivery = '自取';
-
-      // 收藏状态（默认选中）
-      var favs = JSON.parse(localStorage.getItem('canteen_favs') || '[]');
-      if (!favs.includes(product.id)) {
-        favs.push(product.id);
-        localStorage.setItem('canteen_favs', JSON.stringify(favs));
-      }
-      var favIcon = document.getElementById('detailFavIcon');
-      var favBtn = document.getElementById('detailFavBtn');
-      favIcon.className = 'fa fa-star';
-      favBtn.classList.add('active');
-
-      // 商品图片
-      const img = document.getElementById('detailImg');
-      img.src = product.img;
-      img.onerror = function() {
-        this.style.display = 'none';
-        document.getElementById('detailImgPlaceholder').style.display = 'flex';
+      const CURRENT_ID = getProductIdFromUrl();
+      window.currentDetailProduct = function() {
+        return PRODUCTS.find(p => p.id === CURRENT_ID) || PRODUCTS[0];
       };
 
-      // 价格
-      document.getElementById('detailPrice').textContent = `¥${product.price.toFixed(1)}`;
+      let bannerApi = null;
+      let currentReviews = [];
+      let skuSelected = { spec: '', qty: 1 };
+      let buyNow = false;
+      let previewImages = [];
+      let previewIndex = 0;
+      let previewTouch = { startX: 0, moved: false, deltaX: 0 };
 
-      // 市场价
-      const marketInline = document.getElementById('detailMarketInline');
-      const marketPriceEl = document.getElementById('detailMarketPrice');
-      if (product.originalPrice && product.originalPrice > product.price) {
-        marketPriceEl.textContent = `¥${product.originalPrice.toFixed(1)}`;
-        marketInline.style.display = '';
-      } else {
-        marketInline.style.display = 'none';
+      // ---------- 初始化 ----------
+      function init() {
+        const p = currentDetailProduct();
+        renderBanner(p);
+        renderInfo(p);
+        renderParams(p);
+        renderReviews(p);
+        renderIntroAndPics(p);
+        renderRecommend(p);
+        initFavState(p);
+        initNavState();
+        initTabs();
+        initSkuDefaults(p);
+        // 接受父页 postMessage 修改 id（iframe 模式）
+        window.addEventListener('message', function(e) {
+          if (e.data && e.data.type === 'setProduct' && e.data.id) {
+            const newId = parseInt(e.data.id);
+            if (!isNaN(newId) && newId !== CURRENT_ID) {
+              const url = new URL(location.href);
+              url.searchParams.set('id', newId);
+              location.href = url.toString();
+            }
+          }
+        });
       }
 
-      // 已售
-      document.getElementById('detailSoldCount').textContent = `已售 ${product.sales} 件`;
+      // ---------- 顶部导航双态 ----------
+      function initNavState() {
+        const nav = document.getElementById('detailNav');
+        const tabs = document.getElementById('detailTabs');
+        const search = document.getElementById('navSearch');
+        const banner = document.getElementById('detailBanner');
 
-      // 商品名称
-      document.getElementById('detailName').textContent = product.name;
-
-      // 商品描述
-      document.getElementById('detailDescText').textContent =
-        `${product.brand || '食堂自制'} · ${product.spec || '默认规格'} · 品质保证，新鲜美味`;
-
-      // 已选规格（展示弹窗选择的配送方式）
-      updateDetailSpecValue();
-
-      // 商品参数
-      const paramsGrid = document.getElementById('detailParamsGrid');
-      const categoryName = product.category || '面点';
-      const tagName = product.tag || '自制品';
-
-      const params = [
-        { label: '供应商', value: '马尾食堂自营' },
-        { label: '类别', value: tagName },
-        { label: '规格', value: product.spec || '默认规格' },
-        { label: '配送方式', value: '自取 / 包邮 / 到付 / 送货' },
-        { label: '销售周期', value: '周一至周日' },
-        { label: '销售时间', value: '08:30:00-18:00:00' },
-        { label: '领取时间', value: '次日08:00-18:30' },
-        { label: '联系人', value: '食堂管理员' },
-        { label: '联系方式', value: '0591-88888888' },
-      ];
-
-      paramsGrid.innerHTML = params.map(p => `
-        <div class="detail-param-item">
-          <span class="detail-param-label">${p.label}：</span>
-          <span class="detail-param-value">${p.value}</span>
-        </div>
-      `).join('');
-
-      // 商品详情内容
-      const sectionContent = document.getElementById('detailSectionContent');
-      sectionContent.innerHTML = `
-        <p><strong>【商品介绍】</strong></p>
-        <p>${product.name}，由马尾食堂专业厨师团队精心制作，精选新鲜食材，当日现做，保证每一份都是最佳品质。</p>
-        <p><strong>【食用建议】</strong></p>
-        <p>适合作为早餐、午餐、晚餐或加餐，老少皆宜。建议购买后当日食用，口感最佳。</p>
-        <p><strong>【食品安全】</strong></p>
-        <p>制作过程严格遵循食品安全标准，已投保食品安全责任险，让您吃得安心。</p>
-      `;
-
-      // 规格弹窗
-      document.getElementById('specImg').src = product.img;
-      document.getElementById('specPrice').textContent = `¥${product.price.toFixed(1)}`;
-      document.getElementById('specName').textContent = product.name;
-      document.getElementById('specStock').textContent = `库存：${product.stock}件`;
-
-      // 重置规格弹窗状态
-      const deliveryOptions = document.getElementById('specDeliveryOptions');
-      deliveryOptions.querySelectorAll('.spec-option').forEach((opt, i) => {
-        opt.classList.toggle('active', i === 0);
-      });
-      specQty = 1;
-      document.getElementById('specQtyNum').textContent = specQty;
-
-      // 商品详情图片
-      const imagesGrid = document.getElementById('detailImagesGrid');
-      const productImages = [
-        product.img,
-        product.img,
-        product.img,
-        product.img,
-      ];
-      imagesGrid.innerHTML = productImages.map(function(src) {
-        return '<img src="' + src + '" alt="商品图" onerror="this.style.display=\'none\'">';
-      }).join('');
-
-      // 低价推荐（名称相似，排除自身，价格更低，取最多3个）
-      var lowPriceList = PRODUCTS.filter(function(p) {
-        if (p.id === product.id) return false;
-        if (p.price >= product.price) return false;
-        var kw = product.name.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
-        return p.name.indexOf(kw[0]) !== -1 || kw.indexOf(p.name[0]) !== -1 || p.category === product.category;
-      }).sort(function(a, b) { return a.price - b.price; }).slice(0, 3);
-
-      document.getElementById('lowPriceRecommend').innerHTML = lowPriceList.map(function(p) {
-        var rate = (p.rate || (85 + Math.floor(Math.random() * 12))).toFixed(0);
-        return '<div class="detail-recommend-card" onclick="goToProductDetail(' + p.id + ')">' +
-          '<img class="detail-recommend-card-img" src="' + p.img + '" alt="' + p.name + '" onerror="this.style.display=\'none\'">' +
-          '<div class="detail-recommend-card-body">' +
-          '<div class="detail-recommend-card-name">' + p.name + '</div>' +
-          '<div class="detail-recommend-card-price">¥' + p.price.toFixed(1) + '</div>' +
-          '<div class="detail-recommend-card-meta">' + (p.brand || '马尾食堂') + ' · 好评率' + rate + '%</div>' +
-          '</div></div>';
-      }).join('');
-
-      // 好评推荐（名称相似，排除自身，按销量降序模拟好评，取最多3个）
-      var highRateList = PRODUCTS.filter(function(p) {
-        if (p.id === product.id) return false;
-        var kw = product.name.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
-        return p.name.indexOf(kw[0]) !== -1 || kw.indexOf(p.name[0]) !== -1 || p.category === product.category;
-      }).sort(function(a, b) { return b.sales - a.sales; }).slice(0, 3);
-
-      document.getElementById('highRateRecommend').innerHTML = highRateList.map(function(p) {
-        var rate = (p.rate || (85 + Math.floor(Math.random() * 12))).toFixed(0);
-        var goodCount = Math.floor((p.sales || 0) * (rate / 100));
-        return '<div class="detail-recommend-card" onclick="goToProductDetail(' + p.id + ')">' +
-          '<img class="detail-recommend-card-img" src="' + p.img + '" alt="' + p.name + '" onerror="this.style.display=\'none\'">' +
-          '<div class="detail-recommend-card-body">' +
-          '<div class="detail-recommend-card-name">' + p.name + '</div>' +
-          '<div class="detail-recommend-card-price">¥' + p.price.toFixed(1) + '</div>' +
-          '<div class="detail-recommend-card-meta">' + (p.brand || '马尾食堂') + ' · 好评' + formatCount(goodCount) + '</div>' +
-          '</div></div>';
-      }).join('');
-
-      // 默认显示低价推荐 tab
-      switchRecommendTab('low');
-
-      updateCartBadge();
-      document.getElementById('detailPage').scrollTop = 0;
-    }
-
-    function switchRecommendTab(tab) {
-      document.getElementById('tabLowPrice').classList.toggle('active', tab === 'low');
-      document.getElementById('tabHighRate').classList.toggle('active', tab === 'high');
-      document.getElementById('lowPriceRecommend').classList.toggle('active', tab === 'low');
-      document.getElementById('highRateRecommend').classList.toggle('active', tab === 'high');
-    }
-
-    function formatCount(n) {
-      if (n >= 10000) return (n / 10000).toFixed(1) + '万';
-      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
-      return String(n);
-    }
-
-    function goToReviews() {
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'switchPage', page: 'reviews', id: currentProduct.id }, '*');
-      } else {
-        location.href = '用户评价页.html?id=' + currentProduct.id;
+        function update() {
+          const passed = banner.getBoundingClientRect().bottom <= 60;
+          nav.classList.toggle('detail-nav--top', !passed);
+          nav.classList.toggle('detail-nav--solid', passed);
+          tabs.classList.toggle('show', passed);
+          search.classList.toggle('show', passed);
+        }
+        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
       }
-    }
 
-    function goToProductDetail(id) {
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'switchPage', page: 'detail', id: id }, '*');
-      } else {
-        location.href = '商品详情页.html?id=' + id;
-      }
-    }
-
-    /* ===== 规格弹窗 ===== */
-    function openSpecDialog(mode) {
-      const overlay = document.getElementById('specOverlay');
-      overlay.classList.add('show');
-      document.body.style.overflow = 'hidden';
-      specQty = 1;
-      selectedDelivery = '自取';
-      document.getElementById('specQtyNum').textContent = specQty;
-      // 重置配送方式选中状态
-      document.querySelectorAll('#specDeliveryOptions .spec-option').forEach(function(opt, i) {
-        opt.classList.toggle('active', i === 0);
-      });
-      updateDetailSpecValue();
-    }
-
-    function closeSpecDialog() {
-      document.getElementById('specOverlay').classList.remove('show');
-      document.body.style.overflow = '';
-    }
-
-    function changeSpecQty(delta) {
-      const newQty = specQty + delta;
-      if (newQty < 1 || newQty > SPEC_LIMIT) return;
-      specQty = newQty;
-      document.getElementById('specQtyNum').textContent = specQty;
-    }
-
-    function selectSpecOption(el) {
-      el.parentElement.querySelectorAll('.spec-option').forEach(function(o) { o.classList.remove('active'); });
-      el.classList.add('active');
-      selectedDelivery = el.textContent;
-      updateDetailSpecValue();
-    }
-
-    function confirmSpecAddCart() {
-      if (!currentProduct) return;
-      const selectedDelivery = document.querySelector('#specDeliveryOptions .spec-option.active')?.textContent || '自取';
-
-      Cart.add({
-        id: currentProduct.id,
-        name: currentProduct.name,
-        price: currentProduct.price,
-        img: currentProduct.img,
-        tag: currentProduct.tag,
-        spec: currentProduct.spec || '',
-        stock: currentProduct.stock,
-        unavailable: currentProduct.unavailable
+      // ---------- 返回 ----------
+      document.getElementById('navBack').addEventListener('click', function() {
+        if (window.history.length > 1) {
+          history.back();
+        } else {
+          if (window.parent !== window) {
+            window.parent.postMessage({ type: 'switchPage', page: 'search' }, '*');
+          } else {
+            location.href = '搜索页.html';
+          }
+        }
       });
 
-      closeSpecDialog();
-      showToast('加入购物车成功，请至购物车界面结算', 'success');
-    }
+      // ---------- Tab 切换 ----------
+      function initTabs() {
+        const tabs = document.querySelectorAll('.detail-tab');
+        tabs.forEach(t => {
+          t.addEventListener('click', function() {
+            const tab = this.dataset.tab;
+            const target = document.querySelector('[data-anchor="' + tab + '"]');
+            if (target) {
+              const navH = document.getElementById('detailNav').offsetHeight || 90;
+              const top = target.getBoundingClientRect().top + window.scrollY - navH;
+              window.scrollTo({ top: top, behavior: 'smooth' });
+            }
+          });
+        });
 
-    function confirmSpecBuy() {
-      if (!currentProduct) return;
-      Cart.add({
-        id: currentProduct.id,
-        name: currentProduct.name,
-        price: currentProduct.price,
-        img: currentProduct.img,
-        tag: currentProduct.tag,
-        spec: currentProduct.spec || '',
-        stock: currentProduct.stock,
-        unavailable: currentProduct.unavailable
+        // 滚动反向高亮
+        const sections = document.querySelectorAll('.detail-section');
+        const io = new IntersectionObserver(entries => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              const id = e.target.dataset.anchor;
+              tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+            }
+          });
+        }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+        sections.forEach(s => io.observe(s));
+
+        // 推荐标签切换
+        document.querySelectorAll('.rec-tab').forEach(t => {
+          t.addEventListener('click', function() {
+            document.querySelectorAll('.rec-tab').forEach(x => x.classList.remove('active'));
+            this.classList.add('active');
+            renderRecommend(currentDetailProduct(), this.dataset.sort);
+          });
+        });
+      }
+
+      // ---------- Banner 轮播 ----------
+      function renderBanner(p) {
+        const slides = document.getElementById('bannerSlides');
+        const dots = document.getElementById('bannerDots');
+        const imgs = p.banners && p.banners.length ? p.banners : [p.img, p.img, p.img];
+        slides.innerHTML = imgs.map((src, i) => {
+          return '<div class="slide" data-i="' + i + '"><img src="' + src + '" alt="banner" onerror="this.src=\'https://via.placeholder.com/600?text=' + encodeURIComponent(p.name) + '\'"></div>';
+        }).join('');
+        dots.innerHTML = imgs.map((_, i) => '<button class="dot' + (i === 0 ? ' active' : '') + '" data-i="' + i + '"></button>').join('');
+
+        // 点击单图进入全屏
+        slides.querySelectorAll('.slide').forEach(s => {
+          s.addEventListener('click', function() {
+            openImgPreview(imgs, parseInt(this.dataset.i || '0'));
+          });
+        });
+
+        bannerApi = initBannerCarousel('#detailBanner', true, 3500);
+      }
+
+      // ---------- 商品基础信息 ----------
+      function renderInfo(p) {
+        document.getElementById('priceMain').textContent = p.price.toFixed(1);
+        document.getElementById('marketPrice').textContent = p.marketPrice ? '市场价 ¥' + p.marketPrice.toFixed(1) : '';
+        document.getElementById('salesText').textContent = '已售 ' + formatNum(p.sales);
+
+        const tags = [];
+        if (p.dailyLimit) tags.push('<span class="tag tag-warning">每日限量 ' + p.dailyLimit + ' 份</span>');
+        tags.push('<span class="tag tag-success">支持7天无理由退货</span>');
+        document.getElementById('nameText').innerHTML =
+          escapeHtml(p.name) + tags.join('');
+
+        document.getElementById('supplierName').textContent = p.brand || '食堂自制';
+        document.title = p.name + ' - 马尾食堂';
+      }
+
+      // ---------- 商品参数 ----------
+      function renderParams(p) {
+        const catL1 = p.category || '其他';
+        const catL2 = p.subCategory || p.spec || '常规';
+        const rows = [
+          ['类别', catL1 + ' / ' + catL2],
+          ['规格', (p.spec || '1') + ' 份'],
+          ['配送方式', '自取 · 包邮'],
+          ['销售周期', '周一至周五'],
+          ['销售时间', '08:30:00 - 18:00:00'],
+          ['领取时间', '次日 08:30:00 - 18:00:00'],
+          ['保留时间', '1天']
+        ];
+        document.getElementById('paramsBox').innerHTML = rows.map(r =>
+          '<div class="detail-params__row"><label>' + r[0] + '</label><span>' + r[1] + '</span></div>'
+        ).join('');
+      }
+
+      // ---------- 评价 ----------
+      function renderReviews(p) {
+        const total = 28 + Math.floor(Math.random() * 20) + (p.id % 7);
+        currentReviews = generateReviews(p.id, total);
+        const avg = (currentReviews.reduce((s, r) => s + r.stars, 0) / currentReviews.length).toFixed(1);
+
+        const goodCount = currentReviews.filter(r => r.stars >= 4).length;
+        const goodRate = ((goodCount / total) * 100).toFixed(2);
+        const countLabel = total >= 1000 ? Math.floor(total / 1000) + '000+' : total;
+        document.getElementById('reviewTitle').innerHTML = '用户评价 <span class="review-count">(' + countLabel + ')</span> <span class="review-good-rate">近3个月好评率 ' + goodRate + '%</span>';
+
+        // 默认展示最新 3 条
+        const latest = currentReviews.slice().sort((a, b) => b.time.localeCompare(a.time)).slice(0, 3);
+        document.getElementById('reviewList').innerHTML = latest.map(r => {
+          const imgsHtml = r.imgs && r.imgs.length ? r.imgs.map((src, i) => {
+            return '<img src="' + src + '" alt="" onclick="event.stopPropagation();openImgPreview(' + JSON.stringify(r.imgs).replace(/"/g, '&quot;') + ',' + i + ')" onerror="this.style.display=\'none\'">';
+          }).join('') : '';
+          return '' +
+            '<div class="detail-review-item">' +
+              '<div class="detail-review-item__head">' +
+                '<span class="detail-review-item__name">' + escapeHtml(r.name) + '</span>' +
+                '<span class="detail-review-item__stars">' + (function() {
+            var label = r.stars >= 4 ? '好评' : (r.stars >= 3 ? '一般' : '差评');
+            var color = r.stars >= 4 ? '#52c41a' : (r.stars >= 3 ? '#faad14' : '#f5222d');
+            var cls = r.stars >= 4 ? 'star-label--good' : (r.stars >= 3 ? 'star-label--ok' : 'star-label--bad');
+            return '<i class="fa fa-star" style="color:' + color + ';"></i><span class="star-label ' + cls + '">' + label + '</span>';
+          }()) + '</span>' +
+              '</div>' +
+              '<div class="detail-review-item__text">' + escapeHtml(r.text) + '</div>' +
+              (imgsHtml ? '<div class="detail-review-item__imgs">' + imgsHtml + '</div>' : '') +
+              '<div class="detail-review-item__meta">' +
+                (r.spec ? '<span>' + escapeHtml(r.spec) + '</span>' : '') +
+                '<span>' + r.time + '</span>' +
+              '</div>' +
+            '</div>';
+        }).join('');
+      }
+
+      function goToReviewAll() {
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'switchPage', page: 'reviewView', id: CURRENT_ID }, '*');
+          return;
+        }
+        location.href = '评价查看页.html?id=' + CURRENT_ID;
+      }
+
+      // ---------- 商品详情 ----------
+      function renderIntroAndPics(p) {
+        document.getElementById('detailIntro').textContent = p.desc || '';
+        const imgs = p.detailImgs && p.detailImgs.length ? p.detailImgs : [p.img];
+        document.getElementById('detailPics').innerHTML = imgs.map((src, i) => {
+          return '<img src="' + src + '" alt="" onclick="openImgPreview(' + JSON.stringify(imgs).replace(/"/g, '&quot;') + ',' + i + ')" onerror="this.style.display=\'none\'">';
+        }).join('');
+      }
+
+      // ---------- 相似推荐 ----------
+      function renderRecommend(p, sort) {
+        sort = sort || 'price';
+        const sameCat = PRODUCTS.filter(x => x.category === p.category && x.id !== p.id);
+        let list = sameCat.length >= 3 ? sameCat.slice() : PRODUCTS.filter(x => x.id !== p.id).slice(0, 6);
+        if (sort === 'price') {
+          list.sort((a, b) => a.price - b.price);
+        } else {
+          list.sort((a, b) => (b.rate || 4.5) - (a.rate || 4.5));
+        }
+        const finalList = list.slice(0, 9);
+        if (!finalList.length) {
+          document.getElementById('recommendGrid').innerHTML = '<div style="text-align:center;color:#999;font-size:13px;padding:20px 0;">暂无相似推荐</div>';
+          return;
+        }
+        const cardCount = finalList.length;
+        const cardsHtml = finalList.map(x =>
+          '<div class="rv-card" onclick="goToProductDetail(' + x.id + ')">' +
+            '<img class="rv-card-img" src="' + x.img + '" alt="" onerror="this.src=\'https://via.placeholder.com/200?text=\'">' +
+            '<div class="rv-card-body">' +
+              '<div class="rv-card-title">' + x.name + '</div>' +
+              '<div class="rv-card-bottom">' +
+                '<span class="rv-card-price">¥' + x.price.toFixed(1) + '</span>' +
+                '<span class="rv-card-rating"><i class="fa fa-star"></i>' + (x.rate || '4.5') + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>'
+        ).join('');
+
+        const pageCount = Math.ceil(cardCount / 3);
+        const dotsHtml = Array.from({length: pageCount}, (_, i) =>
+          '<span class="rv-dot' + (i === 0 ? ' active' : '') + '" data-page="' + i + '"></span>'
+        ).join('');
+
+        document.getElementById('recommendGrid').innerHTML =
+          '<div class="rv-swipe-track" id="rvSwipeTrack">' + cardsHtml + '</div>' +
+          '<div class="rv-pagination" id="rvPagination">' + dotsHtml + '</div>';
+
+        var track = document.getElementById('rvSwipeTrack');
+        track.addEventListener('scroll', function() {
+          var pageW = track.clientWidth;
+          var idx = Math.round(track.scrollLeft / pageW);
+          document.querySelectorAll('.rv-dot').forEach(function(d, i) {
+            d.classList.toggle('active', i === idx);
+          });
+        });
+      }
+
+      // ---------- 收藏 ----------
+      function initFavState(p) {
+        const isFav = Favorites.has(p.id) || true;
+        const btn = document.getElementById('favBtn');
+        btn.querySelector('i').className = isFav ? 'fa fa-star' : 'fa fa-star-o';
+        btn.style.color = isFav ? '#FFB94E' : '';
+      }
+      window.toggleFavorite = function() {
+        const p = currentDetailProduct();
+        const added = Favorites.toggle(p);
+        const btn = document.getElementById('favBtn');
+        btn.querySelector('i').className = added ? 'fa fa-star' : 'fa fa-star-o';
+        btn.style.color = added ? '#FFB94E' : '';
+        showToast(added ? '已加入收藏' : '已取消收藏', 'success');
+      };
+
+      // ---------- 客服 ----------
+      window.openCustomerService = function() {
+        showToast('正在为您接入客服...', 'default');
+        setTimeout(() => showToast('客服暂未在线', 'warning'), 1200);
+      };
+
+      // ---------- SKU 抽屉 ----------
+      function initSkuDefaults(p) {
+        skuSelected.spec = (p.specs && p.specs[0]) || (p.spec || '默认规格');
+        skuSelected.qty = 1;
+        document.getElementById('selectedSpecText').textContent = skuSelected.spec + ' 1 份';
+      }
+
+      window.openSkuPicker = function(addOnly, isBuyNow) {
+        buyNow = !!isBuyNow;
+        const p = currentDetailProduct();
+        const body = document.getElementById('skuBody');
+        const specOpts = p.specs || [p.spec || '默认规格'];
+        body.innerHTML = '' +
+          '<div class="sku-head">' +
+            '<img src="' + p.img + '" alt="" onerror="this.src=\'https://via.placeholder.com/120?text=' + encodeURIComponent(p.name) + '\'">' +
+            '<div>' +
+              '<div class="sku-price">¥' + p.price.toFixed(1) + '</div>' +
+              '<div class="sku-stock">库存 ' + p.stock + ' · 已选 ' + escapeHtml(skuSelected.spec) + ' ' + skuSelected.qty + ' 份</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="sku-row">' +
+            '<div class="sku-row__label">规格</div>' +
+            '<div class="sku-options">' +
+              specOpts.map(s => '<a class="sku-option' + (s === skuSelected.spec ? ' active' : '') + '" data-spec="' + escapeHtml(s) + '">' + escapeHtml(s) + '</a>').join('') +
+            '</div>' +
+          '</div>' +
+          '<div class="sku-row">' +
+            '<div class="sku-row__qty">' +
+              '<span class="sku-row__label">数量</span>' +
+              '<div class="num-stepper">' +
+                '<button class="qty-btn" id="skuMinus">-</button>' +
+                '<span class="qty-num" id="skuNum">' + skuSelected.qty + '</span>' +
+                '<button class="qty-btn" id="skuPlus">+</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+
+        // 规格选择
+        body.querySelectorAll('.sku-option').forEach(o => {
+          o.addEventListener('click', function() {
+            body.querySelectorAll('.sku-option').forEach(x => x.classList.remove('active'));
+            this.classList.add('active');
+            skuSelected.spec = this.dataset.spec;
+          });
+        });
+        // 数量
+        document.getElementById('skuMinus').addEventListener('click', function() {
+          if (skuSelected.qty > 1) {
+            skuSelected.qty--;
+            document.getElementById('skuNum').textContent = skuSelected.qty;
+          }
+        });
+        document.getElementById('skuPlus').addEventListener('click', function() {
+          if (skuSelected.qty < (p.stock || 99)) {
+            skuSelected.qty++;
+            document.getElementById('skuNum').textContent = skuSelected.qty;
+          }
+        });
+
+        showModal('#skuOverlay');
+        document.getElementById('skuDrawer').classList.add('show');
+        document.getElementById('skuConfirm').textContent = buyNow ? '立即购买' : '加入购物车';
+      };
+
+      window.closeSkuPicker = function() {
+        hideModal('#skuOverlay');
+        document.getElementById('skuDrawer').classList.remove('show');
+      };
+
+      window.confirmSku = function() {
+        const p = currentDetailProduct();
+        document.getElementById('selectedSpecText').textContent = skuSelected.spec + ' ' + skuSelected.qty + ' 份';
+        if (buyNow) {
+          closeSkuPicker();
+          goToOrderConfirm(p.id, skuSelected.qty);
+        } else {
+          Cart.add({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            img: p.img,
+            tag: p.tag,
+            spec: skuSelected.spec,
+            stock: p.stock,
+            unavailable: p.unavailable
+          });
+          closeSkuPicker();
+          showToast('已加入购物车', 'success');
+        }
+      };
+
+      // ---------- 分享抽屉 ----------
+      window.openShareDrawer = function() {
+        const p = currentDetailProduct();
+        const url = buildShareUrl(p.id);
+        document.getElementById('shareUrlText').textContent = url;
+        showModal('#shareOverlay');
+        document.getElementById('shareDrawer').classList.add('show');
+      };
+      window.closeShareDrawer = function() {
+        hideModal('#shareOverlay');
+        document.getElementById('shareDrawer').classList.remove('show');
+      };
+      function buildShareUrl(id) {
+        const base = location.origin + location.pathname;
+        return base + '?id=' + id + '&shareUid=' + getShareUid();
+      }
+      window.doShare = function(channel) {
+        const url = buildShareUrl(CURRENT_ID);
+        if (channel === 'wechat' || channel === 'moments' || channel === 'qq') {
+          showToast('已唤起' + (channel === 'wechat' ? '微信' : channel === 'moments' ? '朋友圈' : 'QQ') + '分享', 'success');
+          closeShareDrawer();
+        } else if (channel === 'link') {
+          copyToClipboard(url);
+        }
+      };
+      window.copyShareUrl = function() {
+        copyToClipboard(document.getElementById('shareUrlText').textContent);
+      };
+      function copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(
+            () => showToast('链接已复制', 'success'),
+            () => fallbackCopy(text)
+          );
+        } else {
+          fallbackCopy(text);
+        }
+        closeShareDrawer();
+      }
+      function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:-1000px;';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); showToast('链接已复制', 'success'); }
+        catch (e) { showToast('复制失败，请手动复制', 'error'); }
+        document.body.removeChild(ta);
+      }
+
+      // ---------- 全屏图片预览 ----------
+      window.openImgPreview = function(images, startIndex) {
+        previewImages = images || [];
+        previewIndex = startIndex || 0;
+        if (!previewImages.length) return;
+        const track = document.getElementById('imgPreviewTrack');
+        track.innerHTML = previewImages.map(src => '<div class="img-preview__slide"><img src="' + src + '" alt="" onerror="this.src=\'https://via.placeholder.com/600?text=图片\'"></div>').join('');
+        setPreviewIndex(previewIndex);
+        document.getElementById('imgPreview').classList.add('show');
+        bindPreviewTouch();
+      };
+      window.closeImgPreview = function() {
+        document.getElementById('imgPreview').classList.remove('show');
+        previewImages = [];
+      };
+      function setPreviewIndex(i) {
+        previewIndex = (i + previewImages.length) % previewImages.length;
+        const track = document.getElementById('imgPreviewTrack');
+        track.style.transform = 'translateX(-' + previewIndex * 100 + '%)';
+        document.getElementById('imgPreviewCounter').textContent = (previewIndex + 1) + '/' + previewImages.length;
+      }
+      function bindPreviewTouch() {
+        const box = document.getElementById('imgPreview');
+        box.ontouchstart = function(e) {
+          previewTouch.startX = e.touches[0].clientX;
+          previewTouch.moved = false;
+          previewTouch.deltaX = 0;
+        };
+        box.ontouchmove = function(e) {
+          const diff = e.touches[0].clientX - previewTouch.startX;
+          if (Math.abs(diff) > 4) previewTouch.moved = true;
+          previewTouch.deltaX = diff;
+        };
+        box.ontouchend = function(e) {
+          if (!previewTouch.moved) return;
+          const diff = previewTouch.deltaX;
+          if (diff < -40) setPreviewIndex(previewIndex + 1);
+          else if (diff > 40) setPreviewIndex(previewIndex - 1);
+        };
+      }
+
+      // ---------- 工具 ----------
+      function escapeHtml(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      // 防止商品卡在详情页内再次打开详情（点击穿透）
+      document.getElementById('detailBody').addEventListener('click', function(e) {
+        const card = e.target.closest('.product-card');
+        if (card) {
+          e.stopPropagation();
+          // 让 app.js 的 goToProductDetail 自然执行（点击事件已绑定）
+        }
       });
 
-      closeSpecDialog();
-
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'switchPage', page: 'confirm' }, '*');
+      // 启动
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
       } else {
-        showToast('正在跳转结算...', 'success');
+        init();
       }
-    }
-
-    /* ===== 导航 ===== */
-    function goToCart() {
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'switchPage', page: 'cart' }, '*');
-      } else {
-        showToast('正在跳转购物车...', 'success');
-      }
-    }
-
-    function goBack() {
-      if (window.parent !== window) {
-        window.parent.postMessage({ type: 'navigateBack' }, '*');
-      } else {
-        history.back();
-      }
-    }
-
-    function toggleFavorite() {
-      if (!currentProduct) return;
-      var favs = JSON.parse(localStorage.getItem('canteen_favs') || '[]');
-      var idx = favs.indexOf(currentProduct.id);
-      var favIcon = document.getElementById('detailFavIcon');
-      var favBtn = document.getElementById('detailFavBtn');
-      if (idx === -1) {
-        favs.push(currentProduct.id);
-        favIcon.className = 'fa fa-star';
-        favBtn.classList.add('active');
-        showToast('已收藏', 'success');
-      } else {
-        favs.splice(idx, 1);
-        favIcon.className = 'fa fa-star-o';
-        favBtn.classList.remove('active');
-        showToast('已取消收藏', 'default');
-      }
-      localStorage.setItem('canteen_favs', JSON.stringify(favs));
-    }
-
-    function updateCartBadge() {
-      const count = Cart.getCount();
-      const badge = document.getElementById('detailCartBadge');
-      if (badge) {
-        badge.textContent = count;
-        badge.style.display = count > 0 ? 'flex' : 'none';
-      }
-    }
-
-    window.addEventListener('cartUpdated', updateCartBadge);
-    window.addEventListener('DOMContentLoaded', function() {
-      const params = new URLSearchParams(location.search);
-      const id = parseInt(params.get('id')) || parseInt(location.hash.replace('#detail-', '')) || 1;
-      loadProductDetail(id);
-    });
+    })();
   </script>
 </body>
 </html>

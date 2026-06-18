@@ -777,10 +777,14 @@
 
     function handleSearchBtn() {
       const keyword = document.getElementById('searchInput').value.trim();
-      if (keyword) {
-        doSearch(keyword);
+      const targetPage = keyword
+        ? `商品列表页.html?keyword=${encodeURIComponent(keyword)}`
+        : '商品列表页.html';
+
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'switchPage', page: 'productList', keyword: keyword }, '*');
       } else {
-        cancelSearch();
+        window.location.href = targetPage;
       }
     }
 

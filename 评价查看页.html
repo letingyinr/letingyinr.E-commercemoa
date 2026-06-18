@@ -15,7 +15,12 @@
       --text-secondary: #666;
       --text-tertiary: #999;
       --border-color: #f0f0f0;
+      --border-light: #f0f0f0;
       --bg-color: #f5f5f5;
+      --bg-muted: #f5f5f5;
+      --error: #f5222d;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 14px;
@@ -76,7 +81,14 @@
       flex-shrink: 0;
       background: #f5f5f5;
     }
-    .rv-product-info { flex: 1; min-width: 0; }
+    .rv-product-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .rv-product-left { flex: 1; min-width: 0; }
     .rv-product-name {
       font-size: 14px;
       font-weight: 600;
@@ -92,64 +104,13 @@
       color: #f5222d;
       margin-top: 3px;
     }
-
-    /* ===== 评价概览 ===== */
-    .rv-summary {
-      background: #fff;
-      padding: 14px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 8px;
-    }
-    .rv-summary-score {
-      text-align: center;
+    .rv-product-rate {
+      font-size: 12px;
+      color: #52c41a;
+      white-space: nowrap;
       flex-shrink: 0;
     }
-    .rv-summary-num {
-      font-size: 28px;
-      font-weight: 700;
-      color: #f5222d;
-      line-height: 1;
-    }
-    .rv-summary-label {
-      font-size: 11px;
-      color: var(--text-tertiary);
-      margin-top: 4px;
-    }
-    .rv-summary-stars {
-      color: #ffc107;
-      font-size: 12px;
-      margin-top: 3px;
-    }
-    .rv-summary-bars {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .rv-summary-bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text-tertiary);
-    }
-    .rv-summary-bar-label { width: 24px; }
-    .rv-summary-bar-track {
-      flex: 1;
-      height: 6px;
-      background: #f0f0f0;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .rv-summary-bar-fill {
-      height: 100%;
-      background: #f5222d;
-      border-radius: 3px;
-      transition: width 0.3s;
-    }
-    .rv-summary-bar-count { width: 30px; text-align: right; }
+
 
     /* ===== 筛选标签 ===== */
     .rv-filters {
@@ -215,12 +176,6 @@
       margin-bottom: 3px;
     }
     .rv-stars { color: #ffc107; font-size: 12px; letter-spacing: 1px; }
-    .rv-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 4px;
-    }
     .rv-time { font-size: 11px; color: var(--text-tertiary); }
     .rv-spec { font-size: 11px; color: var(--text-tertiary); }
 
@@ -229,6 +184,7 @@
       color: var(--text-primary);
       line-height: 1.7;
       margin-bottom: 10px;
+      padding-right: 60px;
     }
 
     .rv-images {
@@ -249,10 +205,17 @@
       cursor: pointer;
       background: #f5f5f5;
     }
+    .rv-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .rv-time { font-size: 11px; color: var(--text-tertiary); }
+    .rv-spec { font-size: 11px; color: var(--text-tertiary); }
 
     .rv-like {
       position: absolute;
-      top: 12px;
+      bottom: 12px;
       right: 12px;
       display: flex;
       align-items: center;
@@ -310,7 +273,72 @@
       cursor: pointer;
     }
 
-    /* ===== 空状态 ===== */
+    /* ===== 底部操作栏 ===== */
+    .rv-actionbar {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: #fff;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 8px calc(8px + var(--safe-bottom));
+      border-top: 1px solid var(--border-color);
+      box-shadow: 0 -4px 16px rgba(0,0,0,.04);
+    }
+    .rv-actionbar__icon {
+      flex: 0 0 48px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 2px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      position: relative;
+      padding: 4px 0;
+    }
+    .rv-actionbar__icon i { font-size: 18px; }
+    .rv-actionbar__icon:active { transform: scale(0.92); }
+    .rv-actionbar__icon .badge {
+      position: absolute;
+      top: 0; right: 6px;
+      min-width: 16px; height: 16px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      background: var(--error);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px;
+    }
+    .rv-actionbar__btn {
+      flex: 1;
+      height: 40px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity .2s, transform .15s;
+    }
+    .rv-actionbar__btn:active { transform: scale(0.97); }
+    .rv-actionbar__btn--cart {
+      background: linear-gradient(90deg, #FFB94E 0%, #FF8A3D 100%);
+    }
+    .rv-actionbar__btn--buy {
+      background: linear-gradient(135deg, #1890FF, #40a9ff);
+    }
+
+    /* ===== 折叠提示 ===== */
+    .rv-fold-tip {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      padding: 10px 14px 20px;
+    }
     .rv-empty {
       text-align: center;
       padding: 60px 20px;
@@ -351,20 +379,14 @@
     <div class="rv-product-bar" id="rvProductBar">
       <img class="rv-product-img" id="rvProductImg" src="" alt="">
       <div class="rv-product-info">
-        <div class="rv-product-name" id="rvProductName">加载中...</div>
-        <div class="rv-product-price" id="rvProductPrice">¥0.0</div>
+        <div class="rv-product-left">
+          <div class="rv-product-name" id="rvProductName">加载中...</div>
+          <div class="rv-product-price" id="rvProductPrice">¥0.0</div>
+        </div>
+        <div class="rv-product-rate" id="rvProductRate">近3个月好评率--%</div>
       </div>
     </div>
 
-    <!-- 评价概览 -->
-    <div class="rv-summary" id="rvSummary">
-      <div class="rv-summary-score">
-        <div class="rv-summary-num" id="rvAvgScore">4.9</div>
-        <div class="rv-summary-label">综合评分</div>
-        <div class="rv-summary-stars" id="rvAvgStars"></div>
-      </div>
-      <div class="rv-summary-bars" id="rvSummaryBars"></div>
-    </div>
 
     <!-- 筛选标签 -->
     <div class="rv-filters" id="rvFilters">
@@ -377,6 +399,12 @@
 
     <!-- 评价列表 -->
     <div class="rv-list" id="rvList"></div>
+
+    <!-- 折叠提示 -->
+    <div class="rv-fold-tip" id="rvFoldTip"></div>
+
+    <!-- 底部操作栏占位 -->
+    <div style="height:64px;"></div>
 
   </div>
 
@@ -425,6 +453,17 @@
       document.getElementById('rvProductImg').onerror = function() { this.style.display='none'; };
       document.getElementById('rvProductName').textContent = product.name;
       document.getElementById('rvProductPrice').textContent = '¥' + product.price.toFixed(1);
+
+      // 计算近3个月好评率（仅显示90天内数据）
+      var recentReviews = allReviews.filter(function(r) {
+        var daysAgo = Math.floor((new Date() - new Date(r.time)) / 86400000);
+        return daysAgo <= 90;
+      });
+      var recentGood = recentReviews.filter(function(r) { return r.stars >= 4; });
+      var recentRate = recentReviews.length > 0
+        ? Math.round((recentGood.length / recentReviews.length) * 100)
+        : 0;
+      document.getElementById('rvProductRate').textContent = '近3个月好评率' + recentRate + '%';
 
       // 生成模拟评价
       const rating = product.rate || (4.5 + Math.random() * 0.5);
@@ -489,7 +528,6 @@
         });
       }
 
-      renderSummary(rating, allReviews);
       renderReviews();
     }
 
@@ -556,6 +594,7 @@
 
       if (filtered.length === 0) {
         listEl.innerHTML = '<div class="rv-empty"><i class="fa fa-comments-o"></i><p>暂无相关评价</p></div>';
+        document.getElementById('rvFoldTip').textContent = '';
         return;
       }
 
@@ -568,24 +607,42 @@
         var imgsHtml = r.imgs.map(function(src, idx) {
           return '<img class="rv-image-thumb" src="' + src + '" alt="评价图片" onclick="previewImg(' + r.id + ',' + idx + ')" onerror="this.style.display=\'none\'">';
         }).join('');
-        var specText = r.spec ? '<span class="rv-spec">规格：' + r.spec + '</span>' : '';
 
         return '<div class="rv-item">' +
           '<div class="rv-user">' +
           '<div class="rv-avatar"><i class="fa fa-user"></i></div>' +
           '<div class="rv-user-info">' +
           '<div class="rv-user-name">' + r.name + '</div>' +
-          '<div class="rv-stars">' + starsHtml + '</div>' +
-          '<div class="rv-meta">' +
-          '<div class="rv-time">' + r.time + ' ' + specText + '</div>' +
-          '</div></div></div>' +
+          '<div class="rv-stars">' + (function() {
+          var label = r.stars >= 4 ? '好评' : (r.stars >= 3 ? '一般' : '差评');
+          var color = r.stars >= 4 ? '#52c41a' : (r.stars >= 3 ? '#faad14' : '#f5222d');
+          return '<i class="fa fa-star" style="color:' + color + ';"></i> <span style="font-size:12px;color:' + color + ';">' + label + '</span>';
+        }()) + '</div>' +
+          '</div></div>' +
           '<div class="rv-content">' + r.text + '</div>' +
           (imgsHtml ? '<div class="rv-images">' + imgsHtml + '</div>' : '') +
+          '<div class="rv-bottom-row">' +
+          '<div class="rv-time">' + r.time + '</div>' +
           '<div class="rv-like' + (liked ? ' liked' : '') + '" onclick="toggleLike(' + r.id + ', this)">' +
           '<i class="' + (liked ? 'fa fa-heart' : 'fa fa-heart-o') + '"></i>' +
           '<span>' + (r.likeCount + (liked ? 1 : 0)) + '</span>' +
-          '</div></div>';
+          '</div></div></div>';
       }).join('');
+
+      // 折叠提示：总评价数 - 已显示数 = 折叠数；90天内好评数
+      var totalCount = allReviews.length;
+      var recentCount = allReviews.filter(function(r) {
+        return Math.floor((new Date() - new Date(r.time)) / 86400000) <= 90;
+      }).length;
+      var recentGoodCount = allReviews.filter(function(r) {
+        var daysAgo = Math.floor((new Date() - new Date(r.time)) / 86400000);
+        return daysAgo <= 90 && r.stars >= 4;
+      }).length;
+      var foldedCount = totalCount - filtered.length;
+      document.getElementById('rvFoldTip').textContent =
+        foldedCount > 0
+          ? '已折叠' + foldedCount + '条评价，近3个月' + recentGoodCount + '位用户默认好评'
+          : '';
     }
 
     // ---------- 点赞 ----------
@@ -635,6 +692,36 @@
 
     // ---------- Init ----------
     window.addEventListener('DOMContentLoaded', init);
+
+    // ---------- 底部操作栏占位函数 ----------
+    window.toggleFavorite = function() {
+      var btn = document.getElementById('favBtn');
+      var icon = btn.querySelector('i');
+      var isFav = icon.classList.contains('fa-star');
+      var added = !isFav;
+      icon.className = added ? 'fa fa-star' : 'fa fa-star-o';
+      btn.style.color = added ? '#FFB94E' : '';
+      showToast(added ? '已加入收藏' : '已取消收藏', 'success');
+    };
+    window.goToCartPage = function() {
+      location.href = '首页.html';
+    };
+    window.goToDetailPage = function() {
+      history.back();
+    };
   </script>
+
+  <!-- 底部操作栏 -->
+  <footer class="rv-actionbar">
+    <button class="rv-actionbar__icon" id="favBtn" onclick="toggleFavorite()">
+      <i class="fa fa-star" style="color:#FFB94E;"></i><span>收藏</span>
+    </button>
+    <button class="rv-actionbar__icon" onclick="goToCartPage()">
+      <i class="fa fa-shopping-cart"></i><span>购物车</span>
+      <span class="badge" id="cartBadge">0</span>
+    </button>
+    <button class="rv-actionbar__btn rv-actionbar__btn--cart" onclick="goToDetailPage()">加入购物车</button>
+    <button class="rv-actionbar__btn rv-actionbar__btn--buy" onclick="goToDetailPage()">立即购买</button>
+  </footer>
 </body>
 </html>

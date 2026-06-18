@@ -590,6 +590,18 @@
         if (tabMap[e.data.page]) {
           switchAllView(e.data.page);
         }
+        // 来自商品详情页的供应商跳转：把首页 iframe 加 hash 让它自己打开抽屉
+        if (e.data.page === 'home' && e.data.supplier) {
+          const homeIframe = document.getElementById('iframe-home');
+          if (homeIframe) {
+            const base = '首页.html';
+            homeIframe.src = base + '#supplier=' + encodeURIComponent(e.data.supplier);
+            // 重新切回单页视图
+            setTimeout(() => {
+              homeIframe.src = base + '#supplier=' + encodeURIComponent(e.data.supplier);
+            }, 50);
+          }
+        }
       }
 
       if (e.data.type === 'cartUpdated') {

@@ -32,6 +32,41 @@
       z-index: 50;
       border-bottom: 1px solid #f0f0f0;
     }
+    /* ===== 2. 自取/邮递 Tab ===== */
+    .cart-tabs {
+      display: flex;
+      background: #fff;
+      padding: 0 16px;
+      position: sticky;
+      top: 53px;
+      z-index: 49;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .cart-tab {
+      flex: 1;
+      text-align: center;
+      font-size: 15px;
+      color: var(--text-secondary);
+      padding: 12px 0;
+      position: relative;
+      cursor: pointer;
+      transition: color .15s;
+    }
+    .cart-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .cart-tab.active::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 4px;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
     .cart-header h2 {
       position: absolute;
       left: 50%;
@@ -1065,6 +1100,12 @@
       <button class="header-action" id="headerAction" onclick="toggleEditMode()">管理</button>
     </div>
 
+    <!-- 自取/邮递 Tab -->
+    <div class="cart-tabs">
+      <div class="cart-tab active" data-type="pickup" onclick="switchCartTab(this)">自取</div>
+      <div class="cart-tab" data-type="delivery" onclick="switchCartTab(this)">邮递/配送</div>
+    </div>
+
     <!-- 内容区 -->
     <div class="cart-content" id="cartContent"></div>
 
@@ -1641,6 +1682,14 @@
         recBar.classList.toggle('show', checked.length > 0);
         if (checked.length > 0) renderCartRecommend();
       }
+    }
+
+    // ---------- Tab 切换：自取 / 邮递 ----------
+    function switchCartTab(el) {
+      document.querySelectorAll('.cart-tab').forEach(function(t) { t.classList.remove('active'); });
+      el.classList.add('active');
+      // 预留：按配送方式过滤购物车商品
+      if (typeof renderCart === 'function') renderCart();
     }
 
     // ---------- Edit mode ----------

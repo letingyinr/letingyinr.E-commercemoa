@@ -134,19 +134,22 @@
       pointer-events: auto;
     }
     .supplier-drawer {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
       width: 100%;
       max-width: 430px;
-      margin: 0 auto;
+      height: 560px;
       background: #fff;
       border-radius: 16px 16px 0 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transform: translateY(100%);
       transition: transform 0.3s ease;
     }
     .supplier-drawer-overlay.show .supplier-drawer {
-      transform: translateY(0);
+      transform: translateX(-50%) translateY(0);
     }
     .supplier-drawer-handle {
       width: 40px;
@@ -164,11 +167,61 @@
       border-bottom: 1px solid #F3F4F6;
       flex-shrink: 0;
     }
+    .supplier-drawer-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
     .supplier-drawer-title {
       font-size: 16px;
       font-weight: 600;
       color: #1F2937;
     }
+    .supplier-region-selector {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .supplier-region-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 28px;
+      gap: 4px;
+      padding: 0 10px;
+      background: #F0F7FF;
+      border: 1px solid #1890FF;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #1890FF;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .supplier-region-btn:hover { background: #E6F2FF; }
+    .supplier-region-btn i { font-size: 10px; transition: transform 0.2s; }
+    .supplier-region-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 140px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      z-index: 100;
+      overflow: hidden;
+      display: none;
+    }
+    .supplier-region-dropdown.show { display: block; }
+    .supplier-region-opt {
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #333;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .supplier-region-opt:hover { background: #F0F7FF; color: #1890FF; }
+    .supplier-region-opt.active { color: #1890FF; font-weight: 600; }
     .supplier-drawer-close {
       width: 28px;
       height: 28px;
@@ -207,7 +260,7 @@
       white-space: nowrap;
     }
     .supplier-drawer-tab.active {
-      background: linear-gradient(135deg, #3B82F6, #60A5FA);
+      background: #1890FF;
       color: #fff;
       font-weight: 600;
     }
@@ -399,8 +452,8 @@
       object-fit: cover;
     }
     .cat-level1-name {
-      font-size: 11px;
-      color: var(--text-secondary);
+      font-size: 12px;
+      color: #111827;
       font-weight: 500;
       transition: color 0.2s, font-weight 0.2s;
     }
@@ -544,15 +597,20 @@
       height: 100%;
       object-fit: cover;
     }
-    .cat-card-tag {
+    .cat-card-tag-2 {
       position: absolute;
-      top: 6px;
+      top: 24px;
       left: 6px;
       padding: 1px 5px;
       border-radius: 3px;
       font-size: 9px;
       font-weight: 600;
       color: #fff;
+      line-height: 1.5;
+      max-width: 70%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .cat-card-soldout-tag {
       position: absolute;
@@ -593,6 +651,10 @@
       gap: 3px;
       margin-bottom: 4px;
     }
+    .cat-card-supplier {
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
     .cat-card-meta {
       font-size: 11px;
       color: var(--text-tertiary);
@@ -602,14 +664,6 @@
       font-size: 10px;
       color: var(--error);
       background: #fff1f0;
-      padding: 1px 5px;
-      border-radius: 3px;
-    }
-    .cat-card-daily-limit {
-      display: inline-block;
-      font-size: 10px;
-      color: var(--warning);
-      background: #fffbe6;
       padding: 1px 5px;
       border-radius: 3px;
     }
@@ -640,6 +694,22 @@
       color: var(--text-tertiary);
       text-decoration: line-through;
     }
+
+    /* 价格比对标识（仅图标） */
+    .cat-card-compare {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .cat-card-compare.higher { color: var(--error); background: rgba(255,77,79,0.1); }
+    .cat-card-compare.lower { color: var(--success); background: rgba(82,196,26,0.1); }
+    .cat-card-compare.equal { color: var(--text-tertiary); background: #f5f5f5; }
+    .cat-card-compare i { font-size: 9px; }
 
     /* 商品基础信息行：规格 / 已售 */
     .cat-card-levels {
@@ -1049,7 +1119,7 @@
       <div class="cat-header-inner">
         <div class="cat-supplier-btn" id="catSupplierBtn" onclick="openSupplierDrawer()">
           <div class="cat-supplier-icon"><i class="fa fa-store"></i></div>
-          <span class="cat-supplier-text" id="catSupplierName">省公司</span>
+          <span class="cat-supplier-text" id="catSupplierName">省公司·湖东</span>
           <i class="fa fa-chevron-down"></i>
         </div>
         <div class="cat-search-bar" onclick="goSearch()">
@@ -1169,7 +1239,18 @@
     <div class="supplier-drawer" onclick="event.stopPropagation()">
       <div class="supplier-drawer-handle"></div>
       <div class="supplier-drawer-header">
-        <span class="supplier-drawer-title">供应商</span>
+        <div class="supplier-drawer-title-row">
+          <span class="supplier-drawer-title">供应商</span>
+          <div class="supplier-region-selector">
+            <div class="supplier-region-btn" id="supplierRegionBtn" onclick="toggleRegionDropdown(event)">
+              <span id="supplierRegionLabel">省公司</span>
+              <i class="fa fa-chevron-down"></i>
+            </div>
+            <div class="supplier-region-dropdown" id="supplierRegionDropdown">
+              <div class="supplier-region-opt active" onclick="selectRegionInDrawer('省公司')">省公司</div>
+            </div>
+          </div>
+        </div>
         <div class="supplier-drawer-close" onclick="closeSupplierDrawer()"><i class="fa fa-times"></i></div>
       </div>
       <div class="supplier-drawer-body" id="supplierDrawerBody"></div>
@@ -1361,22 +1442,21 @@
       var cartQty = q.qty || 0;
       var soldOut = p.stock <= 0 || p.unavailable;
 
-      // 商品标签
-      var tagH = '';
-      if (p.tag) {
-        var tagColor = '#1890FF';
-        if (p.tag === '限时团购') tagColor = '#FF4D4F';
-        if (p.tag === '新品') tagColor = '#1890FF';
-        if (p.tag === '助农产品') tagColor = '#52c41a';
-        if (p.tag === '自制品') tagColor = '#faad14';
-        tagH = '<span class="cat-card-tag" style="background:' + tagColor + '">' + p.tag + '</span>';
+      // 商品标签（二级）
+      var tag2H = '';
+      if (p.tag2) {
+        var tag2Color = '#1890FF';
+        if (p.tag2 === '限时团购') tag2Color = '#FF4D4F';
+        if (p.tag2 === '新品') tag2Color = '#1890FF';
+        if (p.tag2 === '助农产品') tag2Color = '#52c41a';
+        if (p.tag2 === '自制品') tag2Color = '#faad14';
+        tag2H = '<span class="cat-card-tag-2" style="background:' + tag2Color + '">' + p.tag2 + '</span>';
       }
 
-      // 每日每人限份
-      var dailyLimitH = p.dailyLimit ? '<span class="cat-card-daily-limit">每日每人限' + p.dailyLimit + '份</span>' : '';
-
-      // 自取标签
       var deliveryTag = soldOut ? '' : '<span class="cat-card-delivery-tag"><i class="fa fa-map-marker-alt"></i>自取</span>';
+
+      // 供应商信息
+      var supplierH = p.supplier ? '<span class="cat-card-supplier"><i class="fa fa-store"></i>' + p.supplier + '</span>' : '';
 
       // 操作按钮
       var btnH = '';
@@ -1404,6 +1484,14 @@
           '</div>'
         : '';
 
+      // 价格比对：与市场价比较（仅图标，无文字）
+      var compareH = '';
+      if (p.marketPrice > 0) {
+        var compareType = p.price > p.marketPrice ? 'higher' : p.price < p.marketPrice ? 'lower' : 'equal';
+        var compareIcon = compareType === 'higher' ? 'fa-arrow-up' : compareType === 'lower' ? 'fa-arrow-down' : 'fa-equals';
+        compareH = '<span class="cat-card-compare ' + compareType + '"><i class="fa ' + compareIcon + '"></i></span>';
+      }
+
       // 市场价：同行划线显示
       var mktH = '';
       if (p.marketPrice > 0) {
@@ -1413,7 +1501,7 @@
       return '<div class="cat-card' + (soldOut ? ' sold-out' : '') + '" onclick="' + cardOnClick + '">' +
         '<div class="cat-card-img">' +
         '<img src="' + (p.img || 'https://via.placeholder.com/200') + '" alt="' + p.name + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/200?text=\' + encodeURIComponent(p.name) + \'\'" />' +
-        (p.tag ? '<span class="cat-card-tag" style="background:' + tagColor + '">' + p.tag + '</span>' : '') +
+        (tag2H ? tag2H : '') +
         (soldOut ? '<div class="cat-card-soldout-tag">已售罄</div>' : '') +
         '</div>' +
         '<div class="cat-card-body">' +
@@ -1421,11 +1509,12 @@
         levelH +
         '<div class="cat-card-meta-row">' +
         (p.limitNum > 0 ? '<span class="cat-card-limit">限购' + p.limitNum + '件</span>' : '') +
-        (dailyLimitH ? dailyLimitH : '') +
         (deliveryTag ? deliveryTag : '') +
+        (supplierH ? supplierH : '') +
         '</div>' +
         '<div class="cat-card-bottom">' +
         '<span class="cat-card-price">¥' + p.price.toFixed(1) + '</span>' +
+        (compareH ? compareH : '') +
         (mktH ? mktH : '') +
         '</div>' +
         '<div class="cat-card-action">' + btnH + '</div>' +
@@ -1453,6 +1542,9 @@
         price: product.price,
         img: product.img,
         tag: product.tag,
+        tag2: product.tag2,
+        marketPrice: product.marketPrice,
+        supplier: product.supplier,
         spec: product.spec || '',
         stock: product.stock,
         unavailable: product.unavailable
@@ -1555,6 +1647,9 @@
         price: specProduct.price,
         img: specProduct.img,
         tag: specProduct.tag,
+        tag2: specProduct.tag2,
+        marketPrice: specProduct.marketPrice,
+        supplier: specProduct.supplier,
         spec: specProduct.spec || '',
         stock: specProduct.stock,
         unavailable: specProduct.unavailable
@@ -1825,6 +1920,33 @@
       document.getElementById('supplierDrawerOverlay').classList.remove('show');
       document.body.style.overflow = '';
     }
+
+    function toggleRegionDropdown(e) {
+      e.stopPropagation();
+      const dropdown = document.getElementById('supplierRegionDropdown');
+      dropdown.classList.toggle('show');
+      const btn = document.getElementById('supplierRegionBtn').querySelector('i');
+      btn.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : '';
+    }
+
+    function selectRegionInDrawer(region) {
+      document.getElementById('supplierRegionLabel').textContent = region;
+      document.getElementById('supplierRegionDropdown').classList.remove('show');
+      document.getElementById('supplierRegionBtn').querySelector('i').style.transform = '';
+      document.querySelectorAll('.supplier-region-opt').forEach(function(opt) {
+        opt.classList.toggle('active', opt.textContent === region);
+      });
+      catSelectRegion(region === '省公司' ? '全部' : region);
+    }
+
+    document.addEventListener('click', function() {
+      const dropdown = document.getElementById('supplierRegionDropdown');
+      if (dropdown && dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+        const btn = document.getElementById('supplierRegionBtn');
+        if (btn) btn.querySelector('i').style.transform = '';
+      }
+    });
 
     init();
   </script>

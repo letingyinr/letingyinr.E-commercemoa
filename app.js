@@ -370,6 +370,36 @@ const SearchHistory = {
 };
 
 // ============ Mock Product Data ============
+// 说明：banners/detailImgs/specs/subCategory/rate 为商品详情页扩展字段，
+// 其它页面不读取，缺失时详情页会用默认值兜底。
+const _DETAIL_FALLBACK_DESC = '新鲜食材，食堂匠心制作，干净卫生，口感丰富，是您日常用餐的好选择。';
+const _DETAIL_FALLBACK_IMGS = [
+  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=750&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=750&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=750&h=500&fit=crop'
+];
+const _PRODUCT_DETAIL_EXT = {
+  1:  { subCategory: '包子',  specs: ['单个装', '3个装', '6个装'],    rate: 4.9 },
+  2:  { subCategory: '牛肉',  specs: ['约200g', '约350g'],          rate: 4.8 },
+  3:  { subCategory: '馒头',  specs: ['单个装', '3个装'],           rate: 4.7 },
+  4:  { subCategory: '猪肉',  specs: ['约150g', '约250g'],          rate: 4.6 },
+  5:  { subCategory: '礼盒',  specs: ['8枚装', '12枚装'],           rate: 4.9 },
+  6:  { subCategory: '粥类',  specs: ['小碗', '中碗', '大碗'],      rate: 4.8 },
+  7:  { subCategory: '饼类',  specs: ['大份', '小份'],              rate: 4.7 },
+  8:  { subCategory: '凉菜',  specs: ['小份', '中份'],              rate: 4.6 },
+  9:  { subCategory: '禽类',  specs: ['约200g', '约350g'],          rate: 4.8 },
+  10: { subCategory: '馒头',  specs: ['单个装', '3个装'],           rate: 4.7 },
+  11: { subCategory: '蛋糕',  specs: ['单条', '2条装'],             rate: 4.9 },
+  12: { subCategory: '热菜',  specs: ['小份', '中份', '大份'],      rate: 4.7 },
+  13: { subCategory: '拼盘',  specs: ['中份', '大份'],              rate: 4.9 },
+  14: { subCategory: '馒头',  specs: ['单个装', '3个装'],           rate: 4.6 },
+  15: { subCategory: '蛋糕',  specs: ['6个装', '12个装'],           rate: 4.8 },
+  16: { subCategory: '豆浆',  specs: ['中杯', '大杯'],              rate: 4.7 },
+  17: { subCategory: '水果',  specs: ['中份', '大份'],              rate: 4.9 },
+  18: { subCategory: '饼类',  specs: ['单个装', '3个装'],           rate: 4.6 },
+  19: { subCategory: '传统糕点', specs: ['12块装', '24块装'],       rate: 4.8 },
+  20: { subCategory: '休闲零食', specs: ['中碗', '大碗'],           rate: 4.7 }
+};
 const PRODUCTS = [
   { id: 1, name: '手工鲜肉包子', price: 3.5, originalPrice: 4.5, marketPrice: 4.0, unit: '个', tag: '自制品', sales: 3280, stock: 50, img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=400&fit=crop', category: '面点', brand: '食堂自制', spec: '单个装', discount: 0.78, unavailable: false, limitNum: 2, dailyLimit: 3 },
   { id: 2, name: '招牌卤牛肉', price: 38, originalPrice: 48, marketPrice: 42, unit: '份', tag: '自制品', sales: 1560, stock: 20, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=400&fit=crop', category: '卤味', brand: '食堂自制', spec: '约200g', discount: 0.79, unavailable: false, limitNum: 1, dailyLimit: 1 },
@@ -392,6 +422,17 @@ const PRODUCTS = [
   { id: 19, name: '绿豆糕', price: 22, originalPrice: 28, marketPrice: 25, unit: '包', tag: '自选区', sales: 560, stock: 35, img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=400&fit=crop', category: '糕点', brand: '五芳斋', spec: '12块装', discount: 0.79, unavailable: false, limitNum: 3 },
   { id: 20, name: '沃隆每日坚果沃家福礼', price: 8, originalPrice: 10, marketPrice: 7.5, unit: '件', tag: '限时团购', sales: 2600, stock: 45, img: 'https://images.unsplash.com/photo-1587131782738-de30ea91a542?w=400&h=400&fit=crop', category: '	休闲零食', brand: '食堂自制', spec: '中碗', discount: 0.8, unavailable: false },
 ];
+
+// 把详情页扩展字段合并到每个商品上，保持旧字段不变
+PRODUCTS.forEach(p => {
+  const ext = _PRODUCT_DETAIL_EXT[p.id] || {};
+  p.subCategory = ext.subCategory || p.spec || '常规';
+  p.specs = ext.specs || [p.spec || '默认规格'];
+  p.rate = ext.rate || (4.5 + Math.random() * 0.5);
+  p.banners = [p.img, p.img, p.img];
+  p.detailImgs = _DETAIL_FALLBACK_IMGS;
+  p.desc = p.name + '：' + _DETAIL_FALLBACK_DESC;
+});
 
 const BANNER_IMAGES = [
   'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=750&h=300&fit=crop',
@@ -563,4 +604,176 @@ window.addEventListener('DOMContentLoaded', updateCartBadge);
 function formatNum(n) {
   if (n >= 10000) return (n / 10000).toFixed(1) + 'w+';
   return n.toString();
+}
+
+// ============ Product Detail Page Helpers ============
+
+// 脱敏姓名：仅保留首字
+function maskName(name) {
+  if (!name) return '匿名';
+  return String(name)[0] + '***';
+}
+
+// 渲染 N 颗星
+function starsHtml(score) {
+  let html = '';
+  const s = Math.round(score * 2) / 2;
+  for (let i = 1; i <= 5; i++) {
+    if (i <= s) html += '<i class="fa fa-star"></i>';
+    else if (i - 0.5 <= s) html += '<i class="fa fa-star-half-alt"></i>';
+    else html += '<i class="fa fa-star" style="color:#d9d9d9"></i>';
+  }
+  return html;
+}
+
+// 商品分类一级 / 二级映射
+const SUB_CATEGORY_MAP = {
+  '面点': '面点',
+  '卤味': '卤味',
+  '糕点': '糕点',
+  '菜品': '菜品',
+  '饮品': '饮品',
+  '米粥': '米粥',
+  '水果': '水果'
+};
+
+// 生成评价数据（沿用评价查看页的 mock 词表）
+const _REVIEW_NAMES = ['张***', '李***', '王***', '赵***', '陈***', '刘***', '杨***', '黄***', '周***', '吴***', '徐***', '孙***', '马***', '朱***', '胡***', '林***', '郭***', '何***', '高***', '罗***'];
+const _REVIEW_GOOD = [
+  '味道很好，每天早上都会来买，价格实惠，分量足！',
+  '早餐必备，配豆浆完美，口感松软香甜，非常满意！',
+  '新鲜出炉的，口感超级好，会一直回购的，强烈推荐！',
+  '食堂出品必属精品，味道正宗，价格便宜，赞一个！',
+  '包装很用心，没有破损，送达很快，好评！',
+  '老顾客了，每次都满意，品质稳定，值得信赖！',
+  '非常好吃，家人都喜欢，已经推荐给朋友了！',
+  '比外面买的便宜多了，质量也很好，五星好评！',
+  '食材新鲜，干净卫生，吃得放心，继续支持！',
+  '性价比超高，这个价格能买到这么好吃的，太值了！'
+];
+const _REVIEW_BAD = [
+  '味道一般，没有想象中好吃，有点失望。',
+  '分量有点少，价格偏贵，性价比一般。',
+  '送达有点慢，希望改进一下配送速度。',
+  '包装有点简陋，建议加强一下。',
+  '不如上次买的好吃，口感差了一些。'
+];
+const _REVIEW_IMG_SETS = [
+  ['https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=400&fit=crop'],
+  ['https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&h=400&fit=crop'],
+  ['https://images.unsplash.com/photo-1587131782738-de30ea91a542?w=400&h=400&fit=crop'],
+  [],
+  ['https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=400&fit=crop', 'https://images.unsplash.com/photo-1568781269258-c95af457b944?w=400&h=400&fit=crop'],
+  [],
+  ['https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=400&h=400&fit=crop'],
+  []
+];
+
+// 根据 productId 生成稳定的评价列表（同一商品每次内容一致）
+function generateReviews(productId, count) {
+  const result = [];
+  let seed = productId * 9301 + 49297;
+  function rand() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+  const baseTime = Date.now();
+  for (let i = 0; i < count; i++) {
+    const starRand = rand();
+    const star = starRand < 0.8 ? 5 : (starRand < 0.95 ? 4 : (rand() < 0.5 ? 3 : 2));
+    const isGood = star >= 4;
+    const text = isGood
+      ? _REVIEW_GOOD[Math.floor(rand() * _REVIEW_GOOD.length)]
+      : _REVIEW_BAD[Math.floor(rand() * _REVIEW_BAD.length)];
+    const imgs = _REVIEW_IMG_SETS[Math.floor(rand() * _REVIEW_IMG_SETS.length)];
+    const daysAgo = Math.floor(rand() * 90);
+    const d = new Date(baseTime - daysAgo * 86400000);
+    const time = d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+    result.push({
+      id: productId * 1000 + i,
+      name: _REVIEW_NAMES[(productId + i) % _REVIEW_NAMES.length],
+      stars: star,
+      text,
+      imgs,
+      time,
+      spec: ['默认规格', '单个装', '约200g', '小份', '大份', '中杯'][Math.floor(rand() * 6)]
+    });
+  }
+  return result;
+}
+
+// 获取或创建当前用户分享溯源 ID
+function getShareUid() {
+  try {
+    let uid = localStorage.getItem('canteen_share_uid');
+    if (!uid) {
+      uid = 'U' + Math.random().toString(36).slice(2, 10).toUpperCase();
+      localStorage.setItem('canteen_share_uid', uid);
+    }
+    return uid;
+  } catch (e) {
+    return 'U00000000';
+  }
+}
+
+// 收藏 / 取消收藏（详情页使用）
+const Favorites = {
+  KEY: 'canteen_favorites',
+  get() {
+    try { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); }
+    catch { return []; }
+  },
+  has(id) { return this.get().some(x => x.id === id); },
+  toggle(product) {
+    const list = this.get();
+    const idx = list.findIndex(x => x.id === product.id);
+    if (idx >= 0) { list.splice(idx, 1); }
+    else { list.unshift({ id: product.id, name: product.name, img: product.img, price: product.price, spec: product.spec, time: Date.now() }); }
+    localStorage.setItem(this.KEY, JSON.stringify(list));
+    return idx < 0;
+  }
+};
+
+// 跳到首页并把供应商带过去（首页监听 hash 解析）
+function goToHomeWithSupplier(supplier) {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'switchPage', page: 'home', supplier: supplier }, '*');
+    return;
+  }
+  location.href = '首页.html#supplier=' + encodeURIComponent(supplier || '');
+}
+
+// 跳到搜索页（保留 query 时把 keyword 一起带上）
+function goToSearchPage(keyword) {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'switchPage', page: 'search', keyword: keyword || '' }, '*');
+    return;
+  }
+  location.href = '搜索页.html' + (keyword ? '?kw=' + encodeURIComponent(keyword) : '');
+}
+
+// 跳到商品分类页（按一级分类）
+function goToCategoryPage(category) {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'switchPage', page: 'category', category: category || '' }, '*');
+    return;
+  }
+  location.href = '分类页.html' + (category ? '?cat=' + encodeURIComponent(category) : '');
+}
+
+// 跳转购物车
+function goToCartPage() {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'switchPage', page: 'cart' }, '*');
+    return;
+  }
+  location.href = '购物车.html';
+}
+
+// 跳转订单确认（立即购买）
+function goToOrderConfirm(productId, qty) {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'switchPage', page: 'orderConfirm', productId: productId, qty: qty }, '*');
+    return;
+  }
+  location.href = '订单确认页.html?ids=' + encodeURIComponent(productId + ':' + (qty || 1));
 }

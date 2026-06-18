@@ -22,35 +22,32 @@
       background: rgba(0, 0, 0, 0);
       z-index: 600;
       display: flex;
-      flex-direction: column;
       justify-content: flex-end;
       pointer-events: none;
       transition: all 0.3s ease;
     }
-
     .supplier-drawer-overlay.show {
       background: rgba(0, 0, 0, 0.5);
       pointer-events: auto;
     }
-
     .supplier-drawer {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
       width: 100%;
       max-width: 430px;
-      margin: 0 auto;
+      height: 560px;
       background: #fff;
       border-radius: 16px 16px 0 0;
-      transform: translateY(100%);
-      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-      max-height: 70vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      transition: transform 0.3s ease;
     }
-
     .supplier-drawer-overlay.show .supplier-drawer {
-      transform: translateY(0);
+      transform: translateX(-50%) translateY(0);
     }
-
     .supplier-drawer-handle {
       width: 40px;
       height: 4px;
@@ -59,7 +56,6 @@
       margin: 12px auto 0;
       flex-shrink: 0;
     }
-
     .supplier-drawer-header {
       display: flex;
       align-items: center;
@@ -68,38 +64,94 @@
       border-bottom: 1px solid #F3F4F6;
       flex-shrink: 0;
     }
-
+    .supplier-drawer-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
     .supplier-drawer-title {
       font-size: 16px;
       font-weight: 600;
       color: #1F2937;
     }
-
+    .supplier-region-selector {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .supplier-region-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 28px;
+      gap: 4px;
+      padding: 0 10px;
+      background: #F0F7FF;
+      border: 1px solid #1890FF;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #1890FF;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .supplier-region-btn:hover {
+      background: #E6F2FF;
+    }
+    .supplier-region-btn i {
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+    .supplier-region-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 140px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      z-index: 100;
+      overflow: hidden;
+      display: none;
+    }
+    .supplier-region-dropdown.show {
+      display: block;
+    }
+    .supplier-region-opt {
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #333;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .supplier-region-opt:hover {
+      background: #F0F7FF;
+      color: #1890FF;
+    }
+    .supplier-region-opt.active {
+      color: #1890FF;
+      font-weight: 600;
+    }
     .supplier-drawer-close {
       width: 28px;
       height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #9CA3AF;
-      font-size: 16px;
       cursor: pointer;
       border-radius: 50%;
       transition: all 0.2s;
     }
-
     .supplier-drawer-close:active {
       background: #F3F4F6;
       color: #6B7280;
     }
-
     .supplier-drawer-body {
       flex: 1;
       overflow-y: auto;
       padding: 12px 16px 24px;
       -webkit-overflow-scrolling: touch;
     }
-
     .supplier-drawer-tabs {
       display: flex;
       gap: 8px;
@@ -107,81 +159,76 @@
       border-bottom: 1px solid #F3F4F6;
       margin-bottom: 12px;
     }
-
     .supplier-drawer-tab {
       padding: 8px 16px;
       font-size: 14px;
       color: #6B7280;
       background: #F3F4F6;
       border-radius: 20px;
-      cursor: pointer;
       transition: all 0.2s;
       font-weight: 500;
       white-space: nowrap;
     }
-
     .supplier-drawer-tab.active {
-      background: linear-gradient(135deg, #3B82F6, #60A5FA);
+      background: #1890FF;
       color: #fff;
       font-weight: 600;
     }
-
     .supplier-drawer-tab:active {
       transform: scale(0.95);
     }
-
     .supplier-options-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
-
-    .supplier-option-item {
+    .supplier-list-option {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 14px 16px;
-      background: #F9FAFB;
+      gap: 10px;
+      padding: 12px 14px;
+      background: #f9f9f9;
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s;
-      border: 1.5px solid transparent;
+      border: 1px solid transparent;
     }
-
-    .supplier-option-item:active {
-      background: #F3F4F6;
+    .supplier-list-option:active {
       transform: scale(0.98);
+      background: #f0f0f0;
     }
-
-    .supplier-option-item.active {
-      background: #EFF6FF;
-      border-color: #3B82F6;
+    .supplier-list-option .list-opt-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
-
-    .supplier-option-item .opt-name {
+    .supplier-list-option .list-opt-name {
       font-size: 14px;
       color: #1F2937;
       font-weight: 500;
     }
-
-    .supplier-option-item.active .opt-name {
-      color: #2563EB;
-      font-weight: 600;
+    .supplier-list-option .list-opt-addr {
+      font-size: 11px;
+      color: #9CA3AF;
     }
-
-    .supplier-option-item .opt-check {
+    .supplier-list-option .list-opt-check {
       width: 18px;
       height: 18px;
       border-radius: 50%;
+      background: #1890FF;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
       opacity: 0;
       transition: opacity 0.2s;
+      flex-shrink: 0;
     }
-
-    .supplier-option-item.active .opt-check {
+    .supplier-list-option .list-opt-check i {
+      color: #fff;
+      font-size: 10px;
+    }
+    .supplier-list-option.active .list-opt-check {
       opacity: 1;
     }
 
@@ -192,134 +239,68 @@
       height: 100%;
     }
     .supplier-col-left {
-      width: 110px;
+      width: 88px;
       flex-shrink: 0;
-      border-right: 1px solid #E5E7EB;
-      padding-right: 0;
+      background: #F9FAFB;
+      border-right: 1px solid #F3F4F6;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .supplier-col-right {
       flex: 1;
-      padding-left: 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-left: 12px;
     }
     .supplier-region-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 12px;
-      font-size: 14px;
-      color: #374151;
+      padding: 12px 10px;
+      font-size: 13px;
+      color: #6B7280;
       cursor: pointer;
-      border-radius: 8px;
-      transition: all 0.15s;
-      margin-bottom: 4px;
+      transition: background 0.15s;
+      border-bottom: 1px solid #F3F4F6;
     }
     .supplier-region-item:active {
       background: #F3F4F6;
-      transform: scale(0.97);
     }
     .supplier-region-item.active {
-      background: #EFF6FF;
-      color: #2563EB;
+      background: #fff;
+      color: #1890FF;
       font-weight: 600;
+      border-right: 2px solid #1890FF;
     }
     .supplier-region-item .region-arrow {
       font-size: 10px;
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-    .supplier-region-item.active .region-arrow {
-      opacity: 1;
+      opacity: 0.5;
     }
     .supplier-type-tabs {
       display: flex;
       gap: 6px;
-      padding-bottom: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #F3F4F6;
       margin-bottom: 8px;
-      border-bottom: 1px solid #E5E7EB;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
+      flex-wrap: wrap;
     }
-    .supplier-type-tabs::-webkit-scrollbar { display: none; }
     .supplier-type-tab {
-      padding: 4px 10px;
+      padding: 5px 12px;
       font-size: 12px;
       color: #6B7280;
+      background: #F3F4F6;
       border-radius: 14px;
-      cursor: pointer;
       transition: all 0.2s;
-      border: 1.5px solid #E5E7EB;
-      white-space: nowrap;
-      flex-shrink: 0;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .supplier-type-tab.active {
+      background: linear-gradient(135deg, #1890FF, #40A9FF);
+      color: #fff;
+      font-weight: 600;
     }
     .supplier-type-tab:active {
       transform: scale(0.95);
-    }
-    .supplier-type-tab.active {
-      background: linear-gradient(135deg, #3B82F6, #60A5FA);
-      color: #fff;
-      font-weight: 600;
-      border-color: transparent;
-    }
-    /* 列表式选项（供应商抽屉） */
-    .supplier-options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .supplier-list-option {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 14px;
-      background: #F9FAFB;
-      border-radius: 8px;
-      cursor: pointer;
-      border: 1.5px solid transparent;
-      transition: all 0.2s;
-    }
-    .supplier-list-option:active {
-      background: #F3F4F6;
-      transform: scale(0.98);
-    }
-    .supplier-list-option.active {
-      background: #EFF6FF;
-      border-color: #3B82F6;
-    }
-    .supplier-list-option .list-opt-info {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-    .supplier-list-option .list-opt-name {
-      font-size: 14px;
-      color: #1F2937;
-      font-weight: 500;
-    }
-    .supplier-list-option.active .list-opt-name {
-      color: #2563EB;
-      font-weight: 600;
-    }
-    .supplier-list-option .list-opt-addr {
-      font-size: 12px;
-      color: var(--text-tertiary);
-    }
-    .supplier-list-option .list-opt-check {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      color: #fff;
-      background: #3B82F6;
-      opacity: 0;
-      transition: opacity 0.2s;
-      flex-shrink: 0;
-    }
-    .supplier-list-option.active .list-opt-check {
-      opacity: 1;
     }
 
     /* 头部区域 - 固定浮于轮播图上方，垂直两行布局 */
@@ -492,7 +473,7 @@
     }
 
     .category-section {
-      background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+      background: transparent;
       margin: 0;
       padding: 0 0 8px;
       position: relative;
@@ -502,7 +483,7 @@
 
     /* 金刚区白色卡片容器 */
     .category-card {
-      background: var(--bg-card);
+      background: #fff;
       border-radius: 10px;
       width: 363.33px;
       margin: 0 auto;
@@ -1414,7 +1395,7 @@
         <div class="home-header-row">
           <div class="supplier-btn" id="supplierBtn" onclick="openSupplierDrawer()">
             <div class="supplier-icon"><i class="fa fa-store"></i></div>
-            <span class="supplier-text" id="supplierName">省公司</span>
+            <span class="supplier-text" id="supplierName">省公司·全部</span>
             <i class="fa fa-chevron-down"></i>
           </div>
           <div class="msg-center-icon" onclick="goToNotice()">
@@ -1456,9 +1437,8 @@
       <div class="category-card">
         <!-- 公告通知 -->
         <div class="notice-bar" style="padding:14px 8px 10px;margin-bottom:2px;">
-          <div class="notice-icon-card" onclick="goToNotice()" title="点击查看公告">
+          <div class="notice-icon-card" title="点击查看公告">
             <i class="fa fa-bullhorn"></i>
-            <span class="notice-dot"></span>
           </div>
           <div class="notice-content" style="overflow:hidden;margin-left:12px;">
             <div class="notice-text">欢迎光临湖东食堂，此处为公告通知内容...</div>
@@ -1590,7 +1570,18 @@
     <div class="supplier-drawer" onclick="event.stopPropagation()">
       <div class="supplier-drawer-handle"></div>
       <div class="supplier-drawer-header">
-        <span class="supplier-drawer-title">供应商</span>
+        <div class="supplier-drawer-title-row">
+          <span class="supplier-drawer-title">供应商</span>
+          <div class="supplier-region-selector">
+            <div class="supplier-region-btn" id="supplierRegionBtn" onclick="toggleRegionDropdown(event)">
+              <span id="supplierRegionLabel">省公司</span>
+              <i class="fa fa-chevron-down"></i>
+            </div>
+            <div class="supplier-region-dropdown" id="supplierRegionDropdown">
+              <div class="supplier-region-opt active" onclick="selectRegionInDrawer('省公司')">省公司</div>
+            </div>
+          </div>
+        </div>
         <div class="supplier-drawer-close" onclick="closeSupplierDrawer()"><i class="fa fa-times"></i></div>
       </div>
       <div class="supplier-drawer-body" id="supplierDrawerBody"></div>
@@ -1877,156 +1868,185 @@
       { name: '上街小卖部', address: '福州市闽侯县上街镇工贸路移动大厦三楼' },
     ];
     const SHANGCHENG_LIST = [
+      { name: '全部', address: '' },
       { name: '本来生活', address: '' },
-      { name: '永辉超市', address: '' },
+      { name: '福建永辉超市', address: '' },
     ];
-    const REGION_LIST = ['省公司', '湖东', '马尾', '上街'];
+    const REGION_LIST = ['全部', '湖东', '马尾', '上街'];
 
-    let currentRegion = '省公司';
-    let currentHall = '全部';
-    let currentShop = '全部';
-    let currentMall = '福建有礼有节商贸有限公司';
-    let currentType = '食堂';
-    let currentSubTab = '全部';
+    let homeRegion = '全部';
+    let homeHall = '全部';
+    let homeShop = '全部';
+    let homeMall = '福建有礼有节商贸有限公司';
+    let homeType = '食堂';
+    let homeSubTab = '全部';
 
-    function getDisplayName() {
-      if (currentRegion === '省公司') {
+    function getHomeDisplayName() {
+      if (homeRegion === '全部') {
         const parts = [];
-        if (currentHall !== '全部') parts.push(currentHall);
-        if (currentShop !== '全部') parts.push(currentShop);
-        if (currentMall) parts.push(currentMall);
-        return parts.length > 0 ? `省公司 · ${parts.join(' · ')}` : '省公司';
+        if (homeHall !== '全部') parts.push(homeHall);
+        if (homeShop !== '全部') parts.push(homeShop);
+        if (homeMall !== '全部') parts.push(homeMall);
+        return parts.length > 0 ? '全部 · ' + parts.join(' · ') : '全部';
       }
-      return currentRegion;
+      return homeRegion;
     }
 
-    function getSubOptions() {
-      if (currentType === '食堂') {
+    function getHomeSubOptions() {
+      if (homeSubTab === '食堂') {
         const base = HALL_LIST.slice(1);
-        if (currentRegion === '省公司') return base;
-        if (currentRegion === '湖东') return base.filter(h => h.name.includes('湖东'));
-        if (currentRegion === '马尾') return base.filter(h => h.name.includes('马尾'));
-        if (currentRegion === '上街') return base.filter(h => h.name.includes('上街'));
+        if (homeRegion === '全部') return base;
+        if (homeRegion === '湖东') return base.filter(function(h) { return h.name.indexOf('湖东') > -1; });
+        if (homeRegion === '马尾') return base.filter(function(h) { return h.name.indexOf('马尾') > -1; });
+        if (homeRegion === '上街') return base.filter(function(h) { return h.name.indexOf('上街') > -1; });
         return base;
-      } else if (currentType === '小卖部') {
+      } else if (homeSubTab === '小卖部') {
         const base = SHOP_LIST.slice(1);
-        if (currentRegion === '省公司') return base;
-        if (currentRegion === '湖东') return base.filter(s => s.name.includes('湖东'));
-        if (currentRegion === '马尾') return base.filter(s => s.name.includes('马尾'));
-        if (currentRegion === '上街') return base.filter(s => s.name.includes('上街'));
+        if (homeRegion === '全部') return base;
+        if (homeRegion === '湖东') return base.filter(function(s) { return s.name.indexOf('湖东') > -1; });
+        if (homeRegion === '马尾') return base.filter(function(s) { return s.name.indexOf('马尾') > -1; });
+        if (homeRegion === '上街') return base.filter(function(s) { return s.name.indexOf('上街') > -1; });
         return base;
       } else {
         return SHANGCHENG_LIST;
       }
     }
 
-    function getAllOptions() {
-      const opts = getSubOptions();
-      return [{ name: '全部', address: '' }, ...opts];
+    function getHomeAllOptions() {
+      const halls = HALL_LIST.slice(1);
+      const shops = SHOP_LIST.slice(1);
+      const malls = SHANGCHENG_LIST.slice(1);
+      return [{ name: '全部', address: '' }].concat(halls).concat(shops).concat(malls);
     }
 
-    function renderSupplierDrawer() {
+    function toggleRegionDropdown(e) {
+      e.stopPropagation();
+      const dropdown = document.getElementById('supplierRegionDropdown');
+      dropdown.classList.toggle('show');
+      const btn = document.getElementById('supplierRegionBtn').querySelector('i');
+      btn.style.transform = dropdown.classList.contains('show') ? 'rotate(180deg)' : '';
+    }
+
+    function selectRegionInDrawer(region) {
+      document.getElementById('supplierRegionLabel').textContent = region;
+      document.getElementById('supplierRegionDropdown').classList.remove('show');
+      document.getElementById('supplierRegionBtn').querySelector('i').style.transform = '';
+      document.querySelectorAll('.supplier-region-opt').forEach(function(opt) {
+        opt.classList.toggle('active', opt.textContent === region);
+      });
+      homeSelectRegion(region === '省公司' ? '全部' : region);
+    }
+
+    document.addEventListener('click', function() {
+      const dropdown = document.getElementById('supplierRegionDropdown');
+      if (dropdown && dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+        document.getElementById('supplierRegionBtn').querySelector('i').style.transform = '';
+      }
+    });
+
+    function renderHomeSupplierDrawer() {
       const body = document.getElementById('supplierDrawerBody');
 
-      const leftCol = REGION_LIST.map(r => `
-        <div class="supplier-region-item ${r === currentRegion ? 'active' : ''}"
-             onclick="selectRegion('${r}')">
-          <span class="region-name">${r}</span>
-          <span class="region-arrow"><i class="fa fa-chevron-right"></i></span>
-        </div>
-      `).join('');
+      const leftCol = REGION_LIST.map(function(r) {
+        return '<div class="supplier-region-item ' + (r === homeRegion ? 'active' : '') + '" onclick="homeSelectRegion(\'' + r + '\')">' +
+          '<span class="region-name">' + r + '</span>' +
+          '<span class="region-arrow"><i class="fa fa-chevron-right"></i></span>' +
+          '</div>';
+      }).join('');
 
       const allTabs = ['全部', '食堂', '小卖部', '商城'];
-      const typeTabsHtml = allTabs.map(t => `
-        <div class="supplier-type-tab ${t === currentSubTab ? 'active' : ''}"
-             onclick="switchSubTab('${t}')">${t}</div>
-      `).join('');
+      const typeTabsHtml = allTabs.map(function(t) {
+        return '<div class="supplier-type-tab ' + (t === homeSubTab ? 'active' : '') + '" onclick="homeSwitchSubTab(\'' + t + '\')">' + t + '</div>';
+      }).join('');
 
-      const options = currentSubTab === '全部' ? getAllOptions() : getSubOptions();
-      const subOptionsHtml = options.map(opt => `
-        <div class="supplier-list-option ${isSubOptionActive(opt) ? 'active' : ''}"
-             onclick="selectSubOption('${opt.name.replace(/'/g, "\\'")}')">
-          <div class="list-opt-info">
-            <span class="list-opt-name">${opt.name}</span>
-            ${opt.address ? `<span class="list-opt-addr">${opt.address}</span>` : ''}
-          </div>
-          <span class="list-opt-check"><i class="fa fa-check"></i></span>
-        </div>
-      `).join('');
+      const options = homeSubTab === '全部' ? getHomeAllOptions() : getHomeSubOptions();
+      const subOptionsHtml = options.map(function(opt) {
+        const isActive = isHomeSubOptionActive(opt);
+        return '<div class="supplier-list-option ' + (isActive ? 'active' : '') + '" onclick="homeSelectSubOption(\'' + opt.name.replace(/'/g, "\\'") + '\')">' +
+          '<div class="list-opt-info">' +
+          '<span class="list-opt-name">' + opt.name + '</span>' +
+          (opt.address ? '<span class="list-opt-addr">' + opt.address + '</span>' : '') +
+          '</div>' +
+          '<span class="list-opt-check"><i class="fa fa-check"></i></span>' +
+          '</div>';
+      }).join('');
 
-      body.innerHTML = `
-        <div class="supplier-drawer-content">
-          <div class="supplier-col-left">${leftCol}</div>
-          <div class="supplier-col-right">
-            <div class="supplier-type-tabs">${typeTabsHtml}</div>
-            <div class="supplier-options-list">${subOptionsHtml}</div>
-          </div>
-        </div>
-      `;
+      body.innerHTML =
+        '<div class="supplier-drawer-content">' +
+        '<div class="supplier-col-left">' + leftCol + '</div>' +
+        '<div class="supplier-col-right">' +
+        '<div class="supplier-type-tabs">' + typeTabsHtml + '</div>' +
+        '<div class="supplier-options-list">' + subOptionsHtml + '</div>' +
+        '</div></div>';
     }
 
-    function isSubOptionActive(opt) {
-      if (currentSubTab === '全部') {
-        return opt.name === currentHall || opt.name === currentShop || opt.name === currentMall;
-      }
-      if (currentSubTab === '食堂') return opt.name === currentHall;
-      if (currentSubTab === '小卖部') return opt.name === currentShop;
-      return opt.name === currentMall;
+    function isHomeSubOptionActive(opt) {
+      if (homeSubTab === '食堂') return opt.name === homeHall;
+      if (homeSubTab === '小卖部') return opt.name === homeShop;
+      if (homeSubTab === '商城') return opt.name === homeMall;
+      return opt.name === '全部' || opt.name === homeHall || opt.name === homeShop || opt.name === homeMall || homeHall === '全部' && homeShop === '全部' && homeMall === '全部';
     }
 
-    function selectRegion(region) {
-      currentRegion = region;
-      if (region !== '省公司') {
-        if (currentSubTab === '食堂' || currentSubTab === '全部') {
-          const filtered = getSubOptions();
-          currentHall = filtered.length > 0 ? filtered[0].name : '全部';
-        } else if (currentSubTab === '小卖部') {
-          const filtered = getSubOptions();
-          currentShop = filtered.length > 0 ? filtered[0].name : '全部';
+    function homeSelectRegion(region) {
+      homeRegion = region;
+      if (region !== '全部') {
+        if (homeSubTab === '食堂' || homeSubTab === '全部') {
+          homeType = '食堂';
+          homeHall = homeRegion + '食堂';
+        } else if (homeSubTab === '小卖部') {
+          homeType = '小卖部';
+          homeShop = homeRegion + '小卖部';
         }
       }
-      renderSupplierDrawer();
+      renderHomeSupplierDrawer();
     }
 
-    function switchSubTab(tab) {
-      currentSubTab = tab;
+    function homeSwitchSubTab(tab) {
+      homeSubTab = tab;
       if (tab === '食堂') {
-        currentType = '食堂';
+        homeType = '食堂';
+        if (homeRegion !== '全部') {
+          homeHall = homeRegion + '食堂';
+        }
       } else if (tab === '小卖部') {
-        currentType = '小卖部';
+        homeType = '小卖部';
+        if (homeRegion !== '全部') {
+          homeShop = homeRegion + '小卖部';
+        }
       } else if (tab === '商城') {
-        currentType = '商城';
+        homeType = '商城';
       }
-      renderSupplierDrawer();
+      renderHomeSupplierDrawer();
     }
 
-    function selectSubOption(name) {
-      if (currentSubTab === '全部') {
+    function homeSelectSubOption(name) {
+      if (homeSubTab === '全部') {
         if (name === '全部') {
-          currentHall = '全部';
-          currentShop = '全部';
-          currentMall = '福建有礼有节商贸有限公司';
-        } else if (name.includes('食堂')) {
-          currentHall = name;
-        } else if (name.includes('小卖部')) {
-          currentShop = name;
+          homeHall = '全部';
+          homeShop = '全部';
+          homeMall = '全部';
+        } else if (HALL_LIST.some(function(h) { return h.name === name; })) {
+          homeHall = name;
+        } else if (SHOP_LIST.some(function(s) { return s.name === name; })) {
+          homeShop = name;
         } else {
-          currentMall = name;
+          homeMall = name;
         }
-      } else if (currentSubTab === '食堂') {
-        currentHall = name;
-      } else if (currentSubTab === '小卖部') {
-        currentShop = name;
+      } else if (homeSubTab === '食堂') {
+        homeHall = name;
+      } else if (homeSubTab === '小卖部') {
+        homeShop = name;
       } else {
-        currentMall = name;
+        homeMall = name;
       }
-      document.getElementById('supplierName').textContent = getDisplayName();
+      document.getElementById('supplierName').textContent = getHomeDisplayName();
       closeSupplierDrawer();
-      showToast(`已切换至 ${getDisplayName()}`, 'success');
+      showToast('已切换至 ' + getHomeDisplayName(), 'success');
     }
 
     function openSupplierDrawer() {
-      renderSupplierDrawer();
+      renderHomeSupplierDrawer();
       document.getElementById('supplierDrawerOverlay').classList.add('show');
       document.body.style.overflow = 'hidden';
     }
@@ -2111,7 +2131,40 @@
     window.addEventListener('DOMContentLoaded', () => {
       initHomePage();
       updateCartBadge();
+      // 监听来自商品详情页的供应商跳转 (#supplier=xxx)
+      handleSupplierHash();
+      window.addEventListener('hashchange', handleSupplierHash);
     });
+
+    function handleSupplierHash() {
+      const hash = location.hash || '';
+      const m = hash.match(/supplier=([^&]+)/);
+      if (!m) return;
+      const supplier = decodeURIComponent(m[1]);
+      if (!supplier) return;
+      // 在三个供应商列表里查找匹配项（HALL_LIST / SHOP_LIST / SHANGCHENG_LIST）
+      const lists = [
+        { list: HALL_LIST, setter: (n) => { homeHall = n; } },
+        { list: SHOP_LIST, setter: (n) => { homeShop = n; } },
+        { list: SHANGCHENG_LIST, setter: (n) => { homeMall = n; } }
+      ];
+      let matched = false;
+      for (const item of lists) {
+        const found = item.list.find(s => s.name === supplier);
+        if (found) {
+          item.setter(found.name);
+          matched = true;
+          break;
+        }
+      }
+      if (matched) {
+        // 重新渲染供应商选择器并打开抽屉（现有渲染逻辑会处理 active 高亮）
+        renderHomeSupplierDrawer();
+        openSupplierDrawer();
+        // 清理 hash 避免影响后续刷新
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+    }
   </script>
 </body>
 </html>

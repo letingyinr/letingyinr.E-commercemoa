@@ -257,16 +257,44 @@
       flex: 1;
       min-width: 0;
     }
+    .rc-reviewed-product-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
     .rc-reviewed-rating {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
+      gap: 8px;
+      margin-bottom: 6px;
     }
-    .rc-reviewed-stars {
-      color: #ffc107;
+    .rc-reviewed-tag {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding: 0 8px;
+      border-radius: 4px;
       font-size: 12px;
-      letter-spacing: 1px;
+      font-weight: 500;
+      line-height: 20px;
+    }
+    .rc-reviewed-tag.tag-good {
+      background: #F6FFED;
+      color: var(--success);
+      border: 1px solid rgba(82, 196, 26, 0.25);
+    }
+    .rc-reviewed-tag.tag-mid {
+      background: #FFF7E6;
+      color: var(--warning);
+    }
+    .rc-reviewed-tag.tag-bad {
+      background: #F5F5F5;
+      color: var(--text-secondary);
     }
     .rc-reviewed-time {
       font-size: 11px;
@@ -889,7 +917,7 @@
               <div class="rc-order-icon" style="background:#f6ffed;color:var(--success);">
                 <i class="fa fa-check"></i>
               </div>
-              <span class="rc-order-time">${order.time}</span>
+              <span class="rc-order-time">下单时间：${order.time}</span>
             </div>
           </div>
           <div class="rc-reviewed-products">
@@ -897,11 +925,9 @@
               <div class="rc-reviewed-product">
                 <img class="rc-reviewed-img" src="${p.img}" alt="${p.name}" onerror="this.style.display='none'">
                 <div class="rc-reviewed-content">
+                  <div class="rc-reviewed-product-name">${p.name}</div>
                   <div class="rc-reviewed-rating">
-                    <div class="rc-reviewed-stars">
-                      ${generateStars(p.stars)}
-                    </div>
-                    <span class="rc-reviewed-time">${p.stars === 5 ? '非常满意' : p.stars === 4 ? '满意' : p.stars === 3 ? '一般' : '差'}</span>
+                    <span class="rc-reviewed-tag ${p.stars >= 4 ? 'tag-good' : p.stars === 3 ? 'tag-mid' : 'tag-bad'}">${p.stars >= 4 ? '好评' : p.stars === 3 ? '一般' : '差评'}</span>
                   </div>
                   <div class="rc-reviewed-text">${p.text}</div>
                   ${p.images && p.images.length > 0 ? `
@@ -924,10 +950,7 @@
               </div>
               <div class="rc-reviewed-footer">
                 <span style="font-size:12px;color:var(--text-tertiary);">订单号: ${order.id}</span>
-                <div class="rc-add-review-btn" onclick="toggleAddReview(${order.id}, ${p.id})">
-                  <i class="fa fa-edit"></i>
-                  ${p.hasAddReview ? '查看追评' : '写追评'}
-                </div>
+                ${p.hasAddReview ? '' : `<div class="rc-add-review-btn" onclick="toggleAddReview(${order.id}, ${p.id})"><i class="fa fa-edit"></i>写追评</div>`}
               </div>
               <div class="rc-add-review-panel ${expandedAddReview === p.id ? 'show' : ''}" id="addReviewPanel_${p.id}">
                 <div class="rc-add-review-header">

@@ -380,6 +380,38 @@
       font-size: 10px;
     }
 
+    /* ===== 好评快速标签 ===== */
+    .wr-quick-tags {
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .wr-quick-tags.show { display: flex; }
+    .wr-quick-tags-label {
+      width: 100%;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+    .wr-quick-tag {
+      padding: 5px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: #f5f5f5;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .wr-quick-tag:active { transform: scale(0.95); }
+    .wr-quick-tag.selected {
+      background: #F6FFED;
+      color: var(--success);
+      border-color: var(--success);
+    }
+
     /* ===== 提交按钮 ===== */
     .wr-submit-bar {
       position: fixed;
@@ -485,7 +517,7 @@
     <!-- 评价操作栏 -->
     <div class="wr-global-bar" id="wrGlobalBar">
       <div class="wr-global-info">
-        <span class="wr-global-label">商品质量怎么样？<span id="wrGlobalCount">0</span>/<span id="wrTotalCount">0</span></span>
+        <span class="wr-global-label">商品怎么样？<span id="wrGlobalCount">0</span>/<span id="wrTotalCount">0</span></span>
       </div>
       <div class="wr-global-actions">
         <div class="wr-quick-good" onclick="setAllProductRating('good')">
@@ -622,6 +654,10 @@
                 </div>
                 <textarea class="wr-textarea" id="text_${p.id}" placeholder="走心评价会创造出更多好货哦~" maxlength="500" oninput="updateText(${p.id}, this.value)">${rating.text}</textarea>
               </div>
+              <div class="wr-quick-tags ${rating.rating === 'good' ? 'show' : ''}" id="quickTags_${p.id}">
+                <span class="wr-quick-tags-label">快捷标签</span>
+                ${['很入味', '口感好', '分量足', '配料干净', '回购推荐'].map(tag => `<span class="wr-quick-tag ${(rating.text || '').includes(tag) ? 'selected' : ''}" onclick="toggleQuickTag(${p.id}, '${tag}', this)">${tag}</span>`).join('')}
+              </div>
               <div class="wr-images-section">
                 <div class="wr-images-header">
                   <span class="wr-images-title">添加图片</span>
@@ -716,6 +752,26 @@
       if (countEl) {
         countEl.textContent = `${value.length}/500`;
       }
+      // 同步更新标签选中状态
+      document.querySelectorAll(`#quickTags_${productId} .wr-quick-tag`).forEach(el => {
+        el.classList.toggle('selected', value.includes(el.textContent));
+      });
+    }
+
+    // ---------- 切换好评快速标签 ----------
+    function toggleQuickTag(productId, tag, el) {
+      const rating = productRatings[productId];
+      if (!rating || rating.rating !== 'good') return;
+      const text = rating.text || '';
+      if (text.includes(tag)) {
+        rating.text = text.replace(tag, '').replace(/\s+/g, ' ').trim();
+      } else {
+        rating.text = text ? text + ' ' + tag : tag;
+      }
+      const ta = document.getElementById(`text_${productId}`);
+      if (ta) ta.value = rating.text;
+      el.classList.toggle('selected');
+      document.getElementById(`charCount_${productId}`).textContent = `${rating.text.length}/500`;
     }
 
     // ---------- 添加图片 ----------
